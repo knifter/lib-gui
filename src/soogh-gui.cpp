@@ -4,6 +4,7 @@
 #include <tools-log.h>
 
 #include "soogh-conf.h"
+#include "soogh-lgfx.h"
 #include "soogh-screen.h"
 
 #ifdef GUI_DEBUG
@@ -12,28 +13,8 @@
     #define GUI_DBG(msg, ...)
 #endif
 
-#define LGFX_USE_V1
-#define LGFX_AUTODETECT
-// #define LGFX_M5STACK_CORE2         // M5Stack Core2
-#include <LGFX_TFT_eSPI.hpp>
-LGFX gfx;
-
-void lv_disp_cb(lv_disp_drv_t* disp, const lv_area_t* area, lv_color_t* color_p);
-
-static lv_disp_draw_buf_t 	_lv_draw_buf;
-static lv_color_t 			_lv_color_buf[LV_BUF_SIZE];
-static lv_disp_drv_t 		_lv_display_drv;        /*Descriptor of a display driver*/
-
-#ifdef GUI_TOUCH
-    static lv_indev_drv_t 		_lv_touch_drv;           /*Descriptor of a input device driver*/
-    void lv_touchpad_cb(lv_indev_drv_t * indev, lv_indev_data_t * data);
-#endif
-
 #ifdef GUI_KEYPAD
     uint32_t _last_key = 0;
-    static lv_indev_drv_t 		_lv_keys_drv;           /*Descriptor of a input device driver*/
-    void lv_keys_cb(lv_indev_drv_t * indev, lv_indev_data_t * data);
-	lv_indev_t*			_indev_keypad;
 #endif
 
 SooghGUI::SooghGUI()
@@ -48,9 +29,9 @@ SooghGUI::~SooghGUI()
 
 bool SooghGUI::begin()
 {
-    gfx.init();
-    gfx.setRotation(1);
-    gfx.setColorDepth(24);
+    _lgfx.init();
+    _lgfx.setRotation(1);
+    _lgfx.setColorDepth(24);
 
 	lv_init();
 
@@ -65,7 +46,7 @@ bool SooghGUI::begin()
 
 #ifdef GUI_TOUCH
     // uint16_t calData[] = { 239, 3926, 233, 265, 3856, 3896, 3714, 308};
-    // gfx.setTouchCalibrate(calData);
+    // _lgfx.setTouchCalibrate(calData);
     lv_indev_drv_init(&_lv_touch_drv);             /*Basic initialization*/
     _lv_touch_drv.type = LV_INDEV_TYPE_POINTER;    /*Touch pad is a pointer-like device*/
     _lv_touch_drv.read_cb = lv_touchpad_cb;      /*Set your driver function*/
@@ -193,48 +174,3 @@ void SooghGUI::showMessage(const char* title, const char* text)
     lv_obj_center(_msgbox);
 };
 
-void lv_disp_cb(lv_disp_drv_t* disp, const lv_area_t* area, lv_color_t* color_p)
-{
-    uint32_t w = ( area->x2 - area->x1 + 1 );
-    uint32_t h = ( area->y2 - area->y1 + 1 );
-
-    gfx.startWrite();
-    gfx.setAddrWindow( area->x1, area->y1, w, h );
-    gfx.writePixelsDMA((lgfx::rgb565_t *)&color_p->full, w * h);
-    gfx.endWrite();
-
-    lv_disp_flush_ready( disp );
-};
-
-#ifdef GUI_TOUCH
-void lv_touchpad_cb(lv_indev_drv_t * indev, lv_indev_data_t * data)
-{
-    uint16_t touchX, touchY;
-    if(gfx.getTouch( &touchX, &touchY))
-    {
-        data->state = LV_INDEV_STATE_PR;
-
-        /*Set the coordinates*/
-        data->point.x = touchX;
-        data->point.y = touchY;
-
-		Serial.printf("Touch = (%d, %d)\n", touchX, touchY);
-    };
-    data->state = LV_INDEV_STATE_REL;
-};
-#endif
-
-#ifdef GUI_KEYPAD
-void lv_keys_cb(lv_indev_drv_t * indev, lv_indev_data_t * data)
-{
-    data->key = _last_key;
-    data->state = LV_INDEV_STATE_RELEASED;
-    if(data->key)
-    {
-        // DBGUI_DBGG("LVGL KEY: %x", data->key);
-        data->state = LV_INDEV_STATE_PRESSED;
-    };
-    _last_key = 0;
-	return;
-};
-#endif // GUI_KEYPAD
