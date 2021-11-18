@@ -45,10 +45,11 @@ class Screen
 		virtual ~Screen();
 		virtual ScreenType type() { return ScreenType::BASE; };
 
-        void load();
-		virtual void close();
 		virtual void init() {};
+        virtual void load();
+		// virtual bool handle(event_t key) { return false; };
         virtual bool loop() { return true; };
+		virtual void close();
 
 		virtual const char* name() { return ScreenNames[(int) type()]; };
 	protected:

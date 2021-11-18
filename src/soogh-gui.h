@@ -19,21 +19,24 @@ class SooghGUI
 		SooghGUI();
 		~SooghGUI();
 
-		bool begin();
-		void loop();
+		virtual bool begin();
+		virtual time_t loop();
 
 #ifdef GUI_KEYPAD
 		virtual uint32_t scan_keys() = 0;
 #endif
 
-		// ScreenPtr	pushScreen(ScreenType, void* data = nullptr);
-		ScreenPtr	pushScreen(ScreenPtr, void* data = nullptr);
-		void		popScreen(Screen* = nullptr);
+		// virtual ScreenPtr	pushScreen(ScreenType, void* data = nullptr);
+		virtual ScreenPtr	pushScreen(ScreenPtr, void* data = nullptr);
+		virtual void		popScreen(Screen* = nullptr);
+
+		virtual void showMessage(const char* title, const char* text);
 
 	private:
 		ScreenStack			_scrstack;
 		time_t				_prv_tick;
-		
+		lv_obj_t		*_msgbox = nullptr;
+
 		// LVGL
 
 	public:

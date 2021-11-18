@@ -6,26 +6,35 @@
 #include "soogh-conf.h"
 #include "soogh-screen.h"
 
+#ifdef GUI_DEBUG
+    #define GUI_DBG     DBG
+#else
+    #define GUI_DBG(msg, ...)
+#endif
+
 #define LGFX_USE_V1
 #define LGFX_AUTODETECT
 // #define LGFX_M5STACK_CORE2         // M5Stack Core2
 #include <LGFX_TFT_eSPI.hpp>
 
 void lv_disp_cb(lv_disp_drv_t* disp, const lv_area_t* area, lv_color_t* color_p);
-#ifdef GUI_TOUCH
-static lv_indev_drv_t 		_lv_touch_drv;           /*Descriptor of a input device driver*/
-void lv_touchpad_cb(lv_indev_drv_t * indev, lv_indev_data_t * data);
-#endif
-#ifdef GUI_KEYPAD
-static lv_indev_drv_t 		_lv_keys_drv;           /*Descriptor of a input device driver*/
-uint32_t scan_keys();
-void lv_keys_cb(lv_indev_drv_t * indev, lv_indev_data_t * data);
-#endif
 
 LGFX gfx;
 static lv_disp_draw_buf_t 	_lv_draw_buf;
 static lv_color_t 			_lv_color_buf[LV_BUF_SIZE];
 static lv_disp_drv_t 		_lv_display_drv;        /*Descriptor of a display driver*/
+
+#ifdef GUI_TOUCH
+    static lv_indev_drv_t 		_lv_touch_drv;           /*Descriptor of a input device driver*/
+    void lv_touchpad_cb(lv_indev_drv_t * indev, lv_indev_data_t * data);
+#endif
+
+#ifdef GUI_KEYPAD
+    uint32_t _last_key = 0;
+    static lv_indev_drv_t 		_lv_keys_drv;           /*Descriptor of a input device driver*/
+    void lv_keys_cb(lv_indev_drv_t * indev, lv_indev_data_t * data);
+	lv_indev_t*			_indev_keypad;
+#endif
 
 SooghGUI::SooghGUI()
 {
@@ -67,7 +76,7 @@ bool SooghGUI::begin()
     lv_indev_drv_init(&_lv_keys_drv);             /*Basic initialization*/
     _lv_keys_drv.type = LV_INDEV_TYPE_KEYPAD;    /*Touch pad is a pointer-like device*/
     _lv_keys_drv.read_cb = lv_keys_cb;      /*Set your driver function*/
-    lv_indev_drv_register(&_lv_touch_drv);         /*Finally register the driver*/
+    _indev_keypad = lv_indev_drv_register(&_lv_keys_drv);         /*Finally register the driver*/
 #endif // GUI_KEYPAD
 
 	// Empty activity stack
@@ -82,19 +91,15 @@ bool SooghGUI::begin()
 	return true;
 };
 
-void SooghGUI::loop()
+time_t SooghGUI::loop()
 {
-    // TODO: Use LVGL to handle global keys/events
-	// if(handle_global_keys(_keypad))
-	// 	_event = KEY_NONE;
-
-	// ActStack may not be empty
+	// ScreenStack may not be empty
 	if(_scrstack.size() == 0)
 	{
 		ERROR("ScreenStack empty, push(Screen)");
+		// pushScreen(ScreenType::BOOT);
 		ScreenPtr scr = std::make_shared<Screen>(*this);
 		pushScreen(scr);
-		// pushScreen(ScreenType::BOOT);
 	};
 
 	// Keeping this (smart) ptr here is important! It prevents pop() from deleting the 
@@ -122,30 +127,14 @@ void SooghGUI::loop()
     	lv_tick_inc(now - _prv_tick);
     	_prv_tick = now;
 	};
-    lv_timer_handler();
+    return lv_timer_handler();
 };
-
-// ScreenPtr SooghGUI::pushScreen(ScreenType scrtype, void* data)
-// {
-// 	ScreenPtr scr = NULL;
-// 	switch(scrtype)
-// 	{
-// 		case ScreenType::BOOT:			scr = std::make_shared<BootScreen>(); break;
-// 		case ScreenType::MAIN:			scr = std::make_shared<MainScreen>(); break;
-
-// 		default:
-// 			pushMessageScreen("Error:", __FUNCTION__, "Invalid <ScreenType>", " identifier"); 
-// 			return NULL;
-// 	};
-//     pushScreen(scr, data);
-// 	return scr;
-// };
 
 ScreenPtr SooghGUI::pushScreen(ScreenPtr scr, void* data)
 {
-	DBG("push(%s)", scr->name());
+	GUI_DBG("GUI: Push %s(%p)", scr->name(), scr);
 	_scrstack.push(scr);
-    DBG("load(%s)", scr->name());
+	// GUI_DBG("GUI: Load %s(%p)", scr->name(), scr);
     scr->load();
 
 	return scr;
@@ -160,7 +149,7 @@ void SooghGUI::popScreen(Screen* scr)
 	// ActivityPtr is a smart ptr. It will delete a in GUI::handle() eventually
 	ScreenPtr top = _scrstack.top();
 	_scrstack.pop();
-	DBG("GUI: pop(%s)", top->name());
+	GUI_DBG("pop(%s)", top->name());
 
     // Just a check for now
     if(scr != nullptr && top.get() != scr)
@@ -170,11 +159,38 @@ void SooghGUI::popScreen(Screen* scr)
         return;
     };
 
+	if(_scrstack.size() == 0)
+	{
+		ERROR("Empty ScreenStack. push(BOOT).");
+        showMessage("ERROR", "ScreenStack empty! push(BOOT)");
+		// pushScreen(ScreenType::BOOT);
+		ScreenPtr scr = std::make_shared<Screen>(*this);
+		pushScreen(scr);
+	};
+
 	// make the screen below active again
     _scrstack.top()->load();
 
-	// DBG("popped, will delete (eventually): %s(%p)", a->name(), a);
+	GUI_DBG("popped, will delete (eventually): %s(%p)", top->name(), top);
 	return;
+};
+
+void SooghGUI::showMessage(const char* title, const char* text)
+{
+    static const char * btns[] ={"Close", ""};
+
+    // Close the previous, if still one open
+    if(_msgbox)
+    {
+        GUI_DBG("Destroying previous message box.");
+        lv_msgbox_close(_msgbox);
+    };
+
+    //lv_layer_top()
+    _msgbox = lv_msgbox_create(NULL, title, text, btns, false);
+    // lv_obj_add_event_cb(mbox1, event_cb, LV_EVENT_VALUE_CHANGED, NULL);
+    // lv_obj_t *but = lv_msgbox_get_btns(mbox1);
+    lv_obj_center(_msgbox);
 };
 
 void lv_disp_cb(lv_disp_drv_t* disp, const lv_area_t* area, lv_color_t* color_p)
@@ -211,11 +227,14 @@ void lv_touchpad_cb(lv_indev_drv_t * indev, lv_indev_data_t * data)
 #ifdef GUI_KEYPAD
 void lv_keys_cb(lv_indev_drv_t * indev, lv_indev_data_t * data)
 {
-    data->key = scan_keys();//last_key();            /*Get the last pressed or released key*/
-    if(data->key != KEY_NONE) 
+    data->key = _last_key;
+    data->state = LV_INDEV_STATE_RELEASED;
+    if(data->key)
+    {
+        // DBGUI_DBGG("LVGL KEY: %x", data->key);
         data->state = LV_INDEV_STATE_PRESSED;
-    else 
-        data->state = LV_INDEV_STATE_RELEASED;
+    };
+    _last_key = 0;
 	return;
 };
 #endif // GUI_KEYPAD
