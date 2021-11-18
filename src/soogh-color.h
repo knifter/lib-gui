@@ -1,7 +1,7 @@
 #ifndef __SOOGH_COLOR_H
 #define __SOOGH_COLOR_H
 
-#include <LGFX_TFT_eSPI.hpp>
+#include "soogh-lgfx.h"
 
 #define COLOR_BLACK			lv_color_black()
 #define COLOR_GREY			lv_palette_main(LV_PALETTE_GREY)

@@ -5,6 +5,7 @@
 #include <memory>
 
 #include "soogh-conf.h"
+#include "soogh-lgfx.h"
 #include "soogh-screen.h"
 
 class Screen;

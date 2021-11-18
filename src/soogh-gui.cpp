@@ -16,10 +16,10 @@
 #define LGFX_AUTODETECT
 // #define LGFX_M5STACK_CORE2         // M5Stack Core2
 #include <LGFX_TFT_eSPI.hpp>
+LGFX gfx;
 
 void lv_disp_cb(lv_disp_drv_t* disp, const lv_area_t* area, lv_color_t* color_p);
 
-LGFX gfx;
 static lv_disp_draw_buf_t 	_lv_draw_buf;
 static lv_color_t 			_lv_color_buf[LV_BUF_SIZE];
 static lv_disp_drv_t 		_lv_display_drv;        /*Descriptor of a display driver*/

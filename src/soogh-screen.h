@@ -1,9 +1,8 @@
 #ifndef __SOOGH_SCREEN_H
 #define __SOOGH_SCREEN_H
 
-#include <LGFX_TFT_eSPI.hpp>
-#include <lvgl.h>
 
+#include "soogh-lgfx.h"
 #include "soogh-gui.h"
 
 enum class ScreenType
