@@ -4,7 +4,10 @@
 
 LGFX _lgfx;
 lv_disp_draw_buf_t 	_lv_draw_buf;
-lv_color_t 			_lv_color_buf[LV_BUF_SIZE];
+lv_color_t 			_lv_color_buf1[LV_BUF_SIZE];
+#ifdef GUI_DOUBLEBUF
+lv_color_t 			_lv_color_buf2[LV_BUF_SIZE];
+#endif
 lv_disp_drv_t 		_lv_display_drv;        /*Descriptor of a display driver*/
 
 #ifdef GUI_TOUCH
@@ -34,17 +37,16 @@ void lv_disp_cb(lv_disp_drv_t* disp, const lv_area_t* area, lv_color_t* color_p)
 void lv_touchpad_cb(lv_indev_drv_t * indev, lv_indev_data_t * data)
 {
     uint16_t touchX, touchY;
-    if(_lgfx.getTouch( &touchX, &touchY))
+    if(!_lgfx.getTouch( &touchX, &touchY))
     {
-        data->state = LV_INDEV_STATE_PR;
-
-        /*Set the coordinates*/
-        data->point.x = touchX;
-        data->point.y = touchY;
-
-		Serial.printf("Touch = (%d, %d)\n", touchX, touchY);
+        data->state = LV_INDEV_STATE_RELEASED;
+        return;
     };
-    data->state = LV_INDEV_STATE_REL;
+    data->state = LV_INDEV_STATE_PRESSED;
+    data->point.x = touchX;
+    data->point.y = touchY;
+
+    // Serial.printf("Touch = (%d, %d)\n", touchX, touchY);
 };
 #endif
 

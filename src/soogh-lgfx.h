@@ -6,14 +6,19 @@
 
 #define LGFX_USE_V1
 #define LGFX_AUTODETECT
-#include <LGFX_TFT_eSPI.hpp>
+// #include <LGFX_TFT_eSPI.hpp>
+#include <LovyanGFX.hpp>
+
 #include <lvgl.h>
 
 extern LGFX _lgfx;
 
 void lv_disp_cb(lv_disp_drv_t*, const lv_area_t*, lv_color_t*);
 extern lv_disp_draw_buf_t 	_lv_draw_buf;
-extern lv_color_t 			_lv_color_buf[LV_BUF_SIZE];
+extern lv_color_t 			_lv_color_buf1[LV_BUF_SIZE];
+#ifdef GUI_DOUBLEBUF
+extern lv_color_t 			_lv_color_buf2[LV_BUF_SIZE];
+#endif
 extern lv_disp_drv_t 		_lv_display_drv;        /*Descriptor of a display driver*/
 
 #ifdef GUI_TOUCH

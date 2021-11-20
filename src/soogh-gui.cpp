@@ -35,8 +35,11 @@ bool SooghGUI::begin()
 
 	lv_init();
 
-    lv_disp_draw_buf_init(&_lv_draw_buf, _lv_color_buf, NULL, LV_BUF_SIZE);
-
+#ifdef GUI_DOUBLEBUF
+    lv_disp_draw_buf_init(&_lv_draw_buf, _lv_color_buf1, _lv_color_buf2, LV_BUF_SIZE);
+#else
+    lv_disp_draw_buf_init(&_lv_draw_buf, _lv_color_buf1, NULL, LV_BUF_SIZE);
+#endif
     lv_disp_drv_init(&_lv_display_drv);          /*Basic initialization*/
     _lv_display_drv.flush_cb = lv_disp_cb;    /*Set your driver function*/
     _lv_display_drv.draw_buf = &_lv_draw_buf;        /*Assign the buffer to the display*/
@@ -45,8 +48,6 @@ bool SooghGUI::begin()
     lv_disp_drv_register(&_lv_display_drv);      /*Finally register the driver*/
 
 #ifdef GUI_TOUCH
-    // uint16_t calData[] = { 239, 3926, 233, 265, 3856, 3896, 3714, 308};
-    // _lgfx.setTouchCalibrate(calData);
     lv_indev_drv_init(&_lv_touch_drv);             /*Basic initialization*/
     _lv_touch_drv.type = LV_INDEV_TYPE_POINTER;    /*Touch pad is a pointer-like device*/
     _lv_touch_drv.read_cb = lv_touchpad_cb;      /*Set your driver function*/
@@ -60,7 +61,7 @@ bool SooghGUI::begin()
     _indev_keypad = lv_indev_drv_register(&_lv_keys_drv);         /*Finally register the driver*/
 #endif // GUI_KEYPAD
 
-	// Empty activity stack
+	// Empty screen stack
 	while(!_scrstack.empty())
 		_scrstack.pop();
 

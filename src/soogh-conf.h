@@ -2,6 +2,7 @@
 #define __SOOGH_CONF_H
 
 #define GUI_TOUCH
+// #define GUI_DOUBLEBUF // NEEDS TESTINGS!
 // #define GUI_KEYPAD
 
 // #define BOOTSCREEN_TIMEOUT_MS		5000
