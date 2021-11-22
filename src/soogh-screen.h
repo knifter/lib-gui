@@ -1,9 +1,17 @@
 #ifndef __SOOGH_SCREEN_H
 #define __SOOGH_SCREEN_H
 
+#include <stack>
+#include <memory>
+
+class Screen;
+
+typedef std::shared_ptr<Screen> ScreenPtr;
+typedef std::stack<ScreenPtr> ScreenStack;
 
 #include "soogh-lgfx.h"
 #include "soogh-gui.h"
+
 
 enum class ScreenType
 {
@@ -46,7 +54,7 @@ class Screen
 
 		virtual void init() {};
         virtual void load();
-		// virtual bool handle(event_t key) { return false; };
+		virtual bool handle(soogh_event_t e) { return false; };
         virtual bool loop() { return true; };
 		virtual void close();
 

@@ -1,9 +1,9 @@
 #ifndef __SOOGH_CONF_H
 #define __SOOGH_CONF_H
 
-#define GUI_TOUCH
+// #define GUI_TOUCH
 // #define GUI_DOUBLEBUF // NEEDS TESTINGS!
-// #define GUI_KEYPAD
+#define GUI_KEYPAD
 
 // #define BOOTSCREEN_TIMEOUT_MS		5000
 #define DISPLAY_HEIGHT				240

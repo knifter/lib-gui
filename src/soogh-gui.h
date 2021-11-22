@@ -4,15 +4,15 @@
 #include <stack>
 #include <memory>
 
+typedef uint32_t soogh_event_t;
+class SooghGUI;
+
 #include "soogh-conf.h"
 #include "soogh-lgfx.h"
 #include "soogh-screen.h"
 
 class Screen;
 enum class ScreenType;
-
-typedef std::shared_ptr<Screen> ScreenPtr;
-typedef std::stack<ScreenPtr> ScreenStack;
 
 class SooghGUI
 {
@@ -24,7 +24,8 @@ class SooghGUI
 		virtual time_t loop();
 
 #ifdef GUI_KEYPAD
-		virtual uint32_t scan_keys() = 0;
+		// virtual uint32_t scan_keys() = 0;
+		virtual bool handle(soogh_event_t e) { return false; };
 #endif
 
 		// virtual ScreenPtr	pushScreen(ScreenType, void* data = nullptr);
@@ -33,12 +34,10 @@ class SooghGUI
 
 		virtual void showMessage(const char* title, const char* text);
 
-	private:
+	protected:
 		ScreenStack			_scrstack;
 		time_t				_prv_tick;
-		lv_obj_t		*_msgbox = nullptr;
-
-		// LVGL
+		lv_obj_t			*_msgbox = nullptr;
 
 	public:
 		SooghGUI(const SooghGUI&) = delete;

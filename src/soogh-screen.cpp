@@ -17,8 +17,9 @@ Screen::~Screen()
 
 void Screen::load()
 {
-    // lv_scr_load_anim(_screen, LV_SCR_LOAD_ANIM_FADE_ON, 300, 0, false);
-    lv_scr_load(_screen);
+    // FIXME: do this in gui.loop()
+    lv_scr_load_anim(_screen, LV_SCR_LOAD_ANIM_FADE_ON, 200, 0, false);
+    // lv_scr_load(_screen);
 };
 
 void Screen::close() 
