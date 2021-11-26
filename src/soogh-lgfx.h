@@ -18,16 +18,16 @@ void lvgl_init();
 
 extern lv_disp_draw_buf_t 	    _lv_draw_buf;
 extern lv_color_t 			    _lv_color_buf1[LV_BUF_SIZE];
-#ifdef GUI_DOUBLEBUF
+#ifdef SOOGH_DOUBLEBUF
     extern lv_color_t 			    _lv_color_buf2[LV_BUF_SIZE];
 #endif
 extern lv_disp_drv_t 		    _lv_display_drv;        /*Descriptor of a display driver*/
 
-#ifdef GUI_TOUCH
+#ifdef SOOGH_TOUCH
     extern lv_indev_drv_t 		_lv_touch_drv;           /*Descriptor of a input device driver*/
 #endif
 
-#ifdef GUI_KEYPAD
+#ifdef SOOGH_KEYPAD
     extern lv_indev_drv_t 		_lv_keys_drv;           /*Descriptor of a input device driver*/
 	extern lv_indev_t*			_lv_indev_keypad;
 #endif

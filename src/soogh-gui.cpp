@@ -7,10 +7,10 @@
 #include "soogh-lgfx.h"
 #include "soogh-screen.h"
 
-#ifdef GUI_DEBUG
-    #define GUI_DBG     DBG
+#ifdef SOOGH_DEBUG
+    #define SOOGH_DBG     DBG
 #else
-    #define GUI_DBG(msg, ...)
+    #define SOOGH_DBG(msg, ...)
 #endif
 
 SooghGUI::SooghGUI()
@@ -56,7 +56,7 @@ time_t SooghGUI::loop()
 	ScreenPtr scr = _scrstack.top();
 
 	// Debug activity
-#ifdef GUI_DEBUG
+#ifdef SOOGH_DEBUG
 	static ScreenPtr prev_scr = nullptr;
 	if(scr != prev_scr)
 	{
@@ -81,7 +81,7 @@ time_t SooghGUI::loop()
 
 ScreenPtr SooghGUI::pushScreen(ScreenPtr scr, void* data)
 {
-	GUI_DBG("GUI: Push %s(%p)", scr->name(), scr);
+	SOOGH_DBG("GUI: Push %s(%p)", scr->name(), scr);
 	_scrstack.push(scr);
 	// GUI_DBG("GUI: Load %s(%p)", scr->name(), scr);
     scr->load();
@@ -98,7 +98,7 @@ void SooghGUI::popScreen(Screen* scr)
 	// ActivityPtr is a smart ptr. It will delete a in GUI::handle() eventually
 	ScreenPtr top = _scrstack.top();
 	_scrstack.pop();
-	GUI_DBG("pop(%s)", top->name());
+	SOOGH_DBG("pop(%s)", top->name());
 
     // Just a check for now
     if(scr != nullptr && top.get() != scr)
@@ -120,7 +120,7 @@ void SooghGUI::popScreen(Screen* scr)
 	// make the screen below active again
     _scrstack.top()->load();
 
-	GUI_DBG("popped, will delete (eventually): %s(%p)", top->name(), top);
+	SOOGH_DBG("popped, will delete (eventually): %s(%p)", top->name(), top);
 	return;
 };
 
@@ -131,7 +131,7 @@ void SooghGUI::showMessage(const char* title, const char* text)
     // Close the previous, if still one open
     if(_msgbox)
     {
-        GUI_DBG("Destroying previous message box.");
+        SOOGH_DBG("Destroying previous message box.");
         lv_msgbox_close(_msgbox);
     };
 

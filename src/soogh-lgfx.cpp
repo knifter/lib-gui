@@ -5,18 +5,18 @@
 LGFX                    _lgfx;
 lv_disp_draw_buf_t  	_lv_draw_buf;
 lv_color_t 			    _lv_color_buf1[LV_BUF_SIZE];
-#ifdef GUI_DOUBLEBUF
+#ifdef SOOGH_DOUBLEBUF
 lv_color_t 			    _lv_color_buf2[LV_BUF_SIZE];
 #endif
 lv_disp_drv_t 		    _lv_display_drv;        /*Descriptor of a display driver*/
 static void lv_disp_cb(lv_disp_drv_t*, const lv_area_t*, lv_color_t*);
 
-#ifdef GUI_TOUCH
+#ifdef SOOGH_TOUCH
     lv_indev_drv_t 		_lv_touch_drv;           /*Descriptor of a input device driver*/
     static void lv_touchpad_cb(lv_indev_drv_t *, lv_indev_data_t *);
 #endif
 
-#ifdef GUI_KEYPAD
+#ifdef SOOGH_KEYPAD
     uint32_t            _lvgl_key = 0;
     lv_indev_drv_t 		_lv_keys_drv;           /*Descriptor of a input device driver*/
 	lv_indev_t*			_indev_keypad;
@@ -34,7 +34,7 @@ void lvgl_init()
 {
     lv_init();
 
-#ifdef GUI_DOUBLEBUF
+#ifdef SOOGH_DOUBLEBUF
     lv_disp_draw_buf_init(&_lv_draw_buf, _lv_color_buf1, _lv_color_buf2, LV_BUF_SIZE);
 #else
     lv_disp_draw_buf_init(&_lv_draw_buf, _lv_color_buf1, NULL, LV_BUF_SIZE);
@@ -46,14 +46,14 @@ void lvgl_init()
     _lv_display_drv.ver_res = DISPLAY_HEIGHT;   /*Set the vertical resolution of the display*/
     lv_disp_drv_register(&_lv_display_drv);      /*Finally register the driver*/
 
-#ifdef GUI_TOUCH
+#ifdef SOOGH_TOUCH
     lv_indev_drv_init(&_lv_touch_drv);             /*Basic initialization*/
     _lv_touch_drv.type = LV_INDEV_TYPE_POINTER;    /*Touch pad is a pointer-like device*/
     _lv_touch_drv.read_cb = lv_touchpad_cb;      /*Set your driver function*/
     lv_indev_drv_register(&_lv_touch_drv);         /*Finally register the driver*/
 #endif // GUI_TOUCH
 
-#ifdef GUI_KEYPAD
+#ifdef SOOGH_KEYPAD
     lv_indev_drv_init(&_lv_keys_drv);             /*Basic initialization*/
     _lv_keys_drv.type = LV_INDEV_TYPE_KEYPAD;    /*Touch pad is a pointer-like device*/
     _lv_keys_drv.read_cb = lv_keys_cb;      /*Set your driver function*/
@@ -75,7 +75,7 @@ static void lv_disp_cb(lv_disp_drv_t* disp, const lv_area_t* area, lv_color_t* c
     lv_disp_flush_ready( disp );
 };
 
-#ifdef GUI_TOUCH
+#ifdef SOOGH_TOUCH
 static void lv_touchpad_cb(lv_indev_drv_t * indev, lv_indev_data_t * data)
 {
     uint16_t touchX, touchY;
@@ -92,7 +92,7 @@ static void lv_touchpad_cb(lv_indev_drv_t * indev, lv_indev_data_t * data)
 };
 #endif
 
-#ifdef GUI_KEYPAD
+#ifdef SOOGH_KEYPAD
 static void lv_keys_cb(lv_indev_drv_t * indev, lv_indev_data_t * data)
 {
     data->key = _lvgl_key;
