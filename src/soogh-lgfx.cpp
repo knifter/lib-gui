@@ -9,15 +9,18 @@ lv_color_t 			    _lv_color_buf1[LV_BUF_SIZE];
 lv_color_t 			    _lv_color_buf2[LV_BUF_SIZE];
 #endif
 lv_disp_drv_t 		    _lv_display_drv;        /*Descriptor of a display driver*/
+static void lv_disp_cb(lv_disp_drv_t*, const lv_area_t*, lv_color_t*);
 
 #ifdef GUI_TOUCH
     lv_indev_drv_t 		_lv_touch_drv;           /*Descriptor of a input device driver*/
+    static void lv_touchpad_cb(lv_indev_drv_t *, lv_indev_data_t *);
 #endif
 
 #ifdef GUI_KEYPAD
     uint32_t            _lvgl_key = 0;
     lv_indev_drv_t 		_lv_keys_drv;           /*Descriptor of a input device driver*/
 	lv_indev_t*			_indev_keypad;
+    static void lv_keys_cb(lv_indev_drv_t *, lv_indev_data_t *);
 #endif
 
 void lgfx_init()
@@ -59,7 +62,7 @@ void lvgl_init()
 #endif // GUI_KEYPAD
 };
 
-void lv_disp_cb(lv_disp_drv_t* disp, const lv_area_t* area, lv_color_t* color_p)
+static void lv_disp_cb(lv_disp_drv_t* disp, const lv_area_t* area, lv_color_t* color_p)
 {
     uint32_t w = ( area->x2 - area->x1 + 1 );
     uint32_t h = ( area->y2 - area->y1 + 1 );
@@ -73,7 +76,7 @@ void lv_disp_cb(lv_disp_drv_t* disp, const lv_area_t* area, lv_color_t* color_p)
 };
 
 #ifdef GUI_TOUCH
-void lv_touchpad_cb(lv_indev_drv_t * indev, lv_indev_data_t * data)
+static void lv_touchpad_cb(lv_indev_drv_t * indev, lv_indev_data_t * data)
 {
     uint16_t touchX, touchY;
     if(!_lgfx.getTouch( &touchX, &touchY))
@@ -90,7 +93,7 @@ void lv_touchpad_cb(lv_indev_drv_t * indev, lv_indev_data_t * data)
 #endif
 
 #ifdef GUI_KEYPAD
-void lv_keys_cb(lv_indev_drv_t * indev, lv_indev_data_t * data)
+static void lv_keys_cb(lv_indev_drv_t * indev, lv_indev_data_t * data)
 {
     data->key = _lvgl_key;
     data->state = LV_INDEV_STATE_RELEASED;

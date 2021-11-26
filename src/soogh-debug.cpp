@@ -1,6 +1,6 @@
 #include "soogh-debug.h"
 
-static void debug_event_input(lv_event_t * e)
+void debug_event_input(lv_event_t * e)
 {
 	lv_event_code_t code = lv_event_get_code(e);
     // lv_obj_t * obj = lv_event_get_target(e);
@@ -39,7 +39,7 @@ static void debug_event_input(lv_event_t * e)
 	};
 };
 
-static void debug_event_drawing(lv_event_t * e)
+void debug_event_drawing(lv_event_t * e)
 {
 	lv_event_code_t code = lv_event_get_code(e);
     // lv_obj_t * obj = lv_event_get_target(e);
@@ -60,7 +60,7 @@ static void debug_event_drawing(lv_event_t * e)
 	};
 };
 
-static void debug_event_special(lv_event_t * e)
+void debug_event_special(lv_event_t * e)
 {
 	lv_event_code_t code = lv_event_get_code(e);
     // lv_obj_t * obj = lv_event_get_target(e);
@@ -77,7 +77,7 @@ static void debug_event_special(lv_event_t * e)
 	};
 };
 
-static void debug_event_other(lv_event_t * e)
+void debug_event_other(lv_event_t * e)
 {
 	lv_event_code_t code = lv_event_get_code(e);
     // lv_obj_t * obj = lv_event_get_target(e);
