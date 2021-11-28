@@ -7,3 +7,5 @@ void debug_event_input(lv_event_t * e);
 void debug_event_drawing(lv_event_t * e);
 void debug_event_special(lv_event_t * e);
 void debug_event_other(lv_event_t * e);
+
+#define DEBUG_EVENT_INPUT(obj)  	lv_obj_add_event_cb(obj, debug_event_input, LV_EVENT_ALL, (void*)(__FUNCTION__));
