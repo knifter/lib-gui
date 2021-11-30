@@ -11,8 +11,9 @@
 #define COLOR_GREEN			lv_palette_main(LV_PALETTE_GREEN)
 #define COLOR_PURPLE		lv_palette_main(LV_PALETTE_PURPLE)
 
-#define COLOR_DARK_GREEN	lv_palette_darken(LV_PALETTE_GREEN, 1)
-#define COLOR_LIGHT_GREEN	lv_palette_lighten(LV_PALETTE_GREEN, 1)
+#define COLOR_DARK_GREEN	lv_palette_darken(LV_PALETTE_GREEN, 2)
+#define COLOR_LIGHT_RED		lv_palette_lighten(LV_PALETTE_RED, 2)
+#define COLOR_LIGHT_GREEN	lv_palette_lighten(LV_PALETTE_GREEN, 2)
 #define COLOR_LIGHT_GREY	lv_palette_lighten(LV_PALETTE_GREY, 4)
 #define COLOR_LIGHT_PURPLE	lv_palette_lighten(LV_PALETTE_PURPLE, 3)
 
