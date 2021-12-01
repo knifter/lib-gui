@@ -4,8 +4,10 @@
 #include <tools-log.h>
 
 #include "soogh-conf.h"
-#include "soogh-lgfx.h"
 #include "soogh-screen.h"
+
+#define SOOGH_LGFX_PRIVATES
+#include "soogh-lgfx.h"
 
 #ifdef SOOGH_DEBUG
     #define SOOGH_DBG     DBG

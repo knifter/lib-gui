@@ -23,12 +23,8 @@ class SooghGUI
 		virtual bool begin();
 		virtual time_t loop();
 
-#ifdef GUI_KEYPAD
-		// virtual uint32_t scan_keys() = 0;
 		virtual bool handle(soogh_event_t e) { return false; };
-#endif
 
-		// virtual ScreenPtr	pushScreen(ScreenType, void* data = nullptr);
 		virtual ScreenPtr	pushScreen(ScreenPtr, void* data = nullptr);
 		virtual void		popScreen(Screen* = nullptr);
 

@@ -16,8 +16,9 @@ static void lv_disp_cb(lv_disp_drv_t*, const lv_area_t*, lv_color_t*);
     static void lv_touchpad_cb(lv_indev_drv_t *, lv_indev_data_t *);
 #endif
 
-#ifdef SOOGH_KEYPAD
-    uint32_t            _lvgl_key = 0;
+#ifdef SOOGH_ENCODER_KEYS
+    uint32_t            lvgl_enc_last_key = 0;
+    bool                lvgl_enc_pressed = false;
     lv_indev_drv_t 		_lv_keys_drv;           /*Descriptor of a input device driver*/
 	lv_indev_t*			_indev_keypad;
     static void lv_keys_cb(lv_indev_drv_t *, lv_indev_data_t *);
@@ -53,13 +54,14 @@ void lvgl_init()
     lv_indev_drv_register(&_lv_touch_drv);         /*Finally register the driver*/
 #endif // GUI_TOUCH
 
-#ifdef SOOGH_KEYPAD
+#ifdef SOOGH_ENCODER_KEYS
     lv_indev_drv_init(&_lv_keys_drv);             /*Basic initialization*/
-    _lv_keys_drv.type = LV_INDEV_TYPE_KEYPAD;    /*Touch pad is a pointer-like device*/
+    _lv_keys_drv.type = LV_INDEV_TYPE_ENCODER;    
     _lv_keys_drv.read_cb = lv_keys_cb;      /*Set your driver function*/
     _indev_keypad = lv_indev_drv_register(&_lv_keys_drv);         /*Finally register the driver*/
-    _lvgl_key = 0;
-#endif // GUI_KEYPAD
+    lvgl_enc_last_key = 0;
+    lvgl_enc_pressed = false;
+#endif // SOOGH_ENCODER_KEYS
 };
 
 static void lv_disp_cb(lv_disp_drv_t* disp, const lv_area_t* area, lv_color_t* color_p)
@@ -92,17 +94,14 @@ static void lv_touchpad_cb(lv_indev_drv_t * indev, lv_indev_data_t * data)
 };
 #endif
 
-#ifdef SOOGH_KEYPAD
-static void lv_keys_cb(lv_indev_drv_t * indev, lv_indev_data_t * data)
+#ifdef SOOGH_ENCODER_KEYS
+void lv_keys_cb(lv_indev_drv_t * indev, lv_indev_data_t * data)
 {
-    data->key = _lvgl_key;
-    data->state = LV_INDEV_STATE_RELEASED;
-    if(data->key)
-    {
-        // DBGUI_DBGG("LVGL KEY: %x", data->key);
+    data->key = lvgl_enc_last_key;            /*Get the last pressed or released key*/
+
+    if(lvgl_enc_pressed) 
         data->state = LV_INDEV_STATE_PRESSED;
-    };
-    _lvgl_key = 0;
-	return;
+    else
+        data->state = LV_INDEV_STATE_RELEASED;
 };
-#endif // GUI_KEYPAD
+#endif // SOOGH_ENCODER_KEYS
