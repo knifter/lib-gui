@@ -10,14 +10,13 @@
 
 
 /*
-	Node (Tree relations only)
-		MenuItem (drawable: draw_item, draw_open)
-			Menu
-				Root(Menu)
-			FloatItem
-			SwitchItem
-			ListItem
-
+Class hierarchy:
+	MenuItem 			(drawable: draw_item, draw_open)
+		SubMenu 		(actual menu)
+			TreeMenu	(Top most Menu)
+		FloatField 		(float editor)
+		SwitchField 	(on/off boolean)
+		ListField 		(picklist)
 */
 
 /*** MenuItem ***************************************************************************************/
@@ -67,8 +66,33 @@ void MenuItem::appendChild(MenuItem* child)
 	_children.push_back(child);
 };
 
+void MenuItem::open()
+{
+	if(_obj)
+		return;
+
+	// close other opened siblings
+	if(_parent)
+		_parent->close_children();
+
+	draw_open();
+};
+
+void MenuItem::close_children()
+{
+	// propagate close through all children as well
+	std::for_each(std::begin(_children), std::end(_children), [](MenuItem* child) 
+	{
+		child->close();
+	});
+};
+
 void MenuItem::close()
 {
+	// make sure children are closed
+	close_children();
+
+	// and then me
 	if(_obj)
 		lv_obj_del(_obj); 
 	_obj = nullptr;
@@ -119,10 +143,13 @@ void FloatField::draw_btn(lv_obj_t *lv_list)
 	me->open();
 };
 
-void FloatField::open()
+void FloatField::draw_open()
 {
 	if(_obj)
 		return;
+
+	_parent->close_children();
+
 	
 	lv_obj_set_style_text_color(_spinbox, COLOR_BLACK, 0);
 	lv_obj_set_style_border_width(_spinbox, 2, 0);
@@ -186,7 +213,7 @@ void FloatField::close()
 };
 
 /*** SubMenu ***************************************************************************************/
-void SubMenu::open()
+void SubMenu::draw_open()
 {
 	// If obj then already open
 	if(_obj)
@@ -211,6 +238,7 @@ void SubMenu::open()
 	std::for_each(std::begin(_children), std::end(_children), 
 		[this](MenuItem* child) 
 		{
+			// FIXME: iterate without lambda so that draw_btn can be protected
 			child->draw_btn(this->_obj);
 		});
 };
