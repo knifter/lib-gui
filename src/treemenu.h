@@ -68,6 +68,9 @@ class FloatField : public MenuItem
 
 	public: // member vars
 		float *value;
+		float min_value = 0;
+		float max_value = 10;
+		int decimals = 2;
 
 	private: // Callbacks
 		static void click_cb(lv_event_t *e);

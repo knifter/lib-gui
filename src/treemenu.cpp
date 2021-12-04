@@ -94,62 +94,23 @@ void FloatField::draw_btn(lv_obj_t *lv_list)
 	lv_obj_set_flex_flow(_btn, LV_FLEX_FLOW_ROW_WRAP);
 	lv_obj_set_style_pad_row(_btn, 3, 0);
 
-	_btn_lbl = lv_label_create(_btn);
-	lv_label_set_text_fmt(_btn_lbl, "%.02f", *value);
-	lv_obj_set_flex_grow(_btn_lbl, 1);
-	lv_obj_set_style_text_color(_btn_lbl, COLOR_GREY, 0);
-};
+	_spinbox = lv_spinbox_create(_btn);
+	lv_obj_set_flex_grow(_spinbox, 1);
+	lv_obj_set_size(_spinbox, 70, 16);
+	lv_obj_set_style_min_width(_spinbox, 50, 0); // ?
+	lv_obj_set_style_pad_all(_spinbox, 3, 0);
+	// lv_obj_scroll_to_y(_spinbox, *value, LV_ANIM_OFF);
+	// lv_obj_set_scroll_dir(_spinbox, 0);
+	// lv_obj_get_scroll_top(obj) + lv_obj_get_scroll_bottom(obj)
 
-void FloatField::open()
-{
-	if(_obj)
-		return;
-	
-	// draw spinbox exactly over the label
-	_spinbox = lv_spinbox_create(_btn_lbl);
-	{
-		lv_coord_t h = lv_obj_get_height(_btn_lbl);
-		lv_coord_t w = lv_obj_get_width(_btn_lbl);
-		lv_obj_set_size(_spinbox, w, h);
+	lv_spinbox_set_range(_spinbox, min_value * decimals, max_value*decimals);
+	const int digits = 4;
+	lv_spinbox_set_digit_format(_spinbox, digits, digits - decimals);
+	lv_spinbox_set_value(_spinbox, *value * 100);
 
-		// lv_obj_set_flex_grow(_spinbox, 4);
-		// lv_obj_center(_spinbox);
-
-		lv_spinbox_set_range(_spinbox, -1000, 25000);
-		lv_spinbox_set_digit_format(_spinbox, 4, 2);
-		lv_spinbox_set_value(_spinbox, *value * 100);
-		lv_spinbox_step_prev(_spinbox);
-		lv_spinbox_step_prev(_spinbox);
-	};
-
-	// And floating buttons just below the spinbox
-	_obj = lv_btnmatrix_create(lv_layer_top());
-	lv_coord_t y = lv_obj_get_y2(_spinbox);
-	lv_coord_t x = lv_obj_get_x(_spinbox);
-	lv_coord_t w = DISPLAY_WIDTH - x;
-	lv_coord_t h = LV_PCT(30);
-	
-	lv_obj_set_size(_obj, w, h);
-	lv_obj_set_pos(_obj, x, y);
-	lv_obj_set_style_pad_all(_obj, 3, 0);
-
-	static const char * map[] = {
-		LV_SYMBOL_LEFT, 
-		LV_SYMBOL_MINUS, 
-		LV_SYMBOL_OK, 
-		LV_SYMBOL_PLUS,
-		LV_SYMBOL_RIGHT, "" };
-	lv_btnmatrix_set_map(_obj, map);
-	lv_btnmatrix_set_btn_width(_obj, 2, 2);
-	lv_obj_align(_obj, LV_ALIGN_CENTER, 0, 20);
-	lv_obj_add_event_cb(_obj, btns_cb, LV_EVENT_VALUE_CHANGED, this);
-};
-
-void FloatField::close()
-{
-	lv_label_set_text_fmt(_btn_lbl, "%.02f", *value);
-	lv_obj_del(_spinbox);
-	MenuItem::close();
+	lv_obj_set_style_text_color(_spinbox, COLOR_GREY, 0);
+	lv_obj_set_style_border_width(_spinbox, 0, 0);
+	lv_obj_add_event_cb(_spinbox, click_cb, LV_EVENT_CLICKED, this);
 };
 
 /* static */ void FloatField::click_cb(lv_event_t *e) // static
@@ -157,6 +118,55 @@ void FloatField::close()
 	FloatField* me = static_cast<FloatField*>(e->user_data);
 	me->open();
 };
+
+void FloatField::open()
+{
+	if(_obj)
+		return;
+	
+	lv_obj_set_style_text_color(_spinbox, COLOR_BLACK, 0);
+	lv_obj_set_style_border_width(_spinbox, 2, 0);
+
+	// And floating buttons just below the spinbox
+	_obj = lv_btnmatrix_create(lv_layer_top());
+	lv_area_t sa;
+	lv_obj_get_coords(_spinbox, &sa);
+	lv_coord_t x, y, w, h;
+	x = sa.x1;
+	h = 50;
+	w = DISPLAY_WIDTH - sa.x1 - 10;
+
+	if(sa.y1 < DISPLAY_HEIGHT /2)
+	{
+		// place below spinbox
+		y = sa.y2;
+	}else{
+		// place above spinbox
+		y = sa.y1 - h;
+	};
+
+	// DBG("btns xywh = %d %d %d %d", x, y, w, h);
+	lv_obj_set_size(_obj, w, h);
+	lv_obj_set_pos(_obj, x, y);
+	lv_obj_set_style_pad_all(_obj, 3, 0);
+
+	static const char * map[] = {
+		LV_SYMBOL_LEFT, LV_SYMBOL_MINUS, LV_SYMBOL_OK, LV_SYMBOL_PLUS, LV_SYMBOL_RIGHT, "" };
+	lv_btnmatrix_set_map(_obj, map);
+	lv_btnmatrix_set_btn_width(_obj, 2, 2);
+	lv_obj_add_event_cb(_obj, btns_cb, LV_EVENT_VALUE_CHANGED, this);
+};
+
+void FloatField::close()
+{
+	lv_obj_set_style_border_width(_spinbox, 0, 0);
+	lv_obj_set_style_text_color(_spinbox, COLOR_GREY, 0);
+    // lv_textarea_set_cursor_pos(_spinbox, 0);
+	// lv_label_set_text_fmt(_btn_lbl, "%.02f", *value);
+	// lv_obj_del(_spinbox);
+	MenuItem::close();
+};
+
 /* static */ void FloatField::btns_cb(lv_event_t * e)
 {
 	// lv_event_code_t code = lv_event_get_code(e);
@@ -172,7 +182,7 @@ void FloatField::close()
 		case 4: lv_spinbox_step_next(me->_spinbox); break;
 		default: DBG("ID = %d", id); break;
 	};
-	*(me->value) = lv_spinbox_get_value(me->_spinbox) / 100.0;
+	*(me->value) = static_cast<float>(lv_spinbox_get_value(me->_spinbox)) / pow(10, (me->decimals));
 };
 
 /*** SubMenu ***************************************************************************************/
