@@ -5,5 +5,6 @@
 #include "soogh-color.h"
 #include "soogh-screen.h"
 #include "soogh-gui.h"
+#include "soogh-event.h"
 
 #endif

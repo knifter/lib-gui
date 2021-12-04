@@ -4,12 +4,12 @@
 #include <stack>
 #include <memory>
 
-typedef uint32_t soogh_event_t;
 class SooghGUI;
 
 #include "soogh-conf.h"
 #include "soogh-lgfx.h"
 #include "soogh-screen.h"
+#include "soogh-event.h"
 
 class Screen;
 enum class ScreenType;
@@ -21,9 +21,7 @@ class SooghGUI
 		~SooghGUI();
 
 		virtual bool begin();
-		virtual time_t loop();
-
-		virtual bool handle(soogh_event_t e) { return false; };
+		virtual bool handle(soogh_event_t e);
 
 		virtual ScreenPtr	pushScreen(ScreenPtr, void* data = nullptr);
 		virtual void		popScreen(Screen* = nullptr);
@@ -36,6 +34,8 @@ class SooghGUI
 		lv_obj_t			*_msgbox = nullptr;
 
 	public:
+		virtual time_t loop();
+
 		SooghGUI(const SooghGUI&) = delete;
 	    SooghGUI& operator=(SooghGUI const&) = delete;
 };

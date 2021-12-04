@@ -11,7 +11,7 @@ typedef std::stack<ScreenPtr> ScreenStack;
 
 #include "soogh-lgfx.h"
 #include "soogh-gui.h"
-
+#include "soogh-event.h"
 
 enum class ScreenType
 {
