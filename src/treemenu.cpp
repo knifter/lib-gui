@@ -29,16 +29,17 @@ MenuItem::MenuItem(MenuItem *parent, const char *text) : _parent(parent), _text(
 
 MenuItem::~MenuItem()
 {
+	close();
+
 	// This will recursively(!) delete all children, bottom up.
 	std::for_each(std::begin(_children), std::end(_children), [](MenuItem* child) 
 	{
 		delete child;
 	});
 
-	if(_obj != nullptr)
+	if(_open)
 	{
-		WARNING("Deleting stray _obj!");
-		lv_obj_del(_obj);
+		WARNING("Destroying open object.");
 	};
 	// DBG("DESTROY(%s) = %p", _text, this);
 };
@@ -68,7 +69,8 @@ void MenuItem::appendChild(MenuItem* child)
 
 void MenuItem::open()
 {
-	if(_obj)
+	DBG(".");
+	if(_open)
 		return;
 
 	// close other opened siblings
@@ -83,24 +85,31 @@ void MenuItem::close_children()
 	// propagate close through all children as well
 	std::for_each(std::begin(_children), std::end(_children), [](MenuItem* child) 
 	{
-		child->close();
+		if(child->isOpen())
+			child->close();
 	});
 };
 
 void MenuItem::close()
 {
+	DBG(".");
+	if(!_open)
+		return;
+
 	// make sure children are closed
 	close_children();
 
+	// Call on-close event callback
+	if(_close_cb)
+		_close_cb(this, _close_data);
+
 	// and then me
-	if(_obj)
-		lv_obj_del(_obj); 
-	_obj = nullptr;
+	_open = false;
 };
 
 bool MenuItem::isOpen() 
 { 
-	return _obj != nullptr; 
+	return _open; 
 };
 
 /*** Separator ***************************************************************************************/
@@ -118,23 +127,11 @@ void FloatField::draw_btn(lv_obj_t *lv_list)
 	lv_obj_set_flex_flow(_btn, LV_FLEX_FLOW_ROW_WRAP);
 	lv_obj_set_style_pad_row(_btn, 3, 0);
 
-	_spinbox = lv_spinbox_create(_btn);
-	lv_obj_set_flex_grow(_spinbox, 1);
-	lv_obj_set_size(_spinbox, 70, 16);
-	lv_obj_set_style_min_width(_spinbox, 50, 0); // ?
-	lv_obj_set_style_pad_all(_spinbox, 3, 0);
-	// lv_obj_scroll_to_y(_spinbox, *value, LV_ANIM_OFF);
-	// lv_obj_set_scroll_dir(_spinbox, 0);
-	// lv_obj_get_scroll_top(obj) + lv_obj_get_scroll_bottom(obj)
+	_btn_lbl = lv_label_create(_btn);
+	lv_label_set_text_fmt(_btn_lbl, "%.02f", *value);
+	lv_obj_set_flex_grow(_btn_lbl, 1);
+	lv_obj_set_style_text_color(_btn_lbl, COLOR_GREY, 0);
 
-	lv_spinbox_set_range(_spinbox, min_value * decimals, max_value*decimals);
-	const int digits = 4;
-	lv_spinbox_set_digit_format(_spinbox, digits, digits - decimals);
-	lv_spinbox_set_value(_spinbox, *value * 100);
-
-	lv_obj_set_style_text_color(_spinbox, COLOR_GREY, 0);
-	lv_obj_set_style_border_width(_spinbox, 0, 0);
-	lv_obj_add_event_cb(_spinbox, click_cb, LV_EVENT_CLICKED, this);
 };
 
 /* static */ void FloatField::click_cb(lv_event_t *e) // static
@@ -143,55 +140,64 @@ void FloatField::draw_btn(lv_obj_t *lv_list)
 	me->open();
 };
 
+int FloatField::digits()
+{
+	int min_digits = ceil(log10(min_value));
+	int max_digits = ceil(log10(max_value));
+	DBG("mindig = %d, maxdig = %d", min_digits, max_digits);
+	return max(min_digits, max_digits) + decimals;
+};
+
 void FloatField::draw_open()
 {
-	if(_obj)
-		return;
+	// get coords of label
+	lv_area_t coor;
+	lv_obj_get_coords(_btn_lbl, &coor);
 
-	_parent->close_children();
+	// draw (floating) spinbox right over label
+	_spinbox = lv_spinbox_create(lv_layer_top());
+	lv_obj_set_pos(_spinbox, coor.x1-5, coor.y1-5);
+	// lv_obj_set_style_pad_all(_spinbox, 3, 0);
 
-	
-	lv_obj_set_style_text_color(_spinbox, COLOR_BLACK, 0);
-	lv_obj_set_style_border_width(_spinbox, 2, 0);
+	lv_spinbox_set_range(_spinbox, min_value * decimals, max_value*decimals);
+	int digits = this->digits();
+	lv_spinbox_set_digit_format(_spinbox, digits, digits - decimals);
+	lv_spinbox_set_value(_spinbox, *value * 100);
 
 	// And floating buttons just below the spinbox
-	_obj = lv_btnmatrix_create(lv_layer_top());
-	lv_area_t sa;
-	lv_obj_get_coords(_spinbox, &sa);
+	_btns = lv_btnmatrix_create(lv_layer_top());
 	lv_coord_t x, y, w, h;
-	x = sa.x1;
+	x = coor.x1;
 	h = 50;
-	w = DISPLAY_WIDTH - sa.x1 - 10;
+	w = DISPLAY_WIDTH - coor.x1 - 10;
 
-	if(sa.y1 < DISPLAY_HEIGHT /2)
+	if(coor.y1 < DISPLAY_HEIGHT /2)
 	{
 		// place below spinbox
-		y = sa.y2;
+		y = coor.y2;
 	}else{
 		// place above spinbox
-		y = sa.y1 - h;
+		y = coor.y1 - h;
 	};
 
 	// DBG("btns xywh = %d %d %d %d", x, y, w, h);
-	lv_obj_set_size(_obj, w, h);
-	lv_obj_set_pos(_obj, x, y);
-	lv_obj_set_style_pad_all(_obj, 3, 0);
+	lv_obj_set_size(_btns, w, h);
+	lv_obj_set_pos(_btns, x, y);
+	lv_obj_set_style_pad_all(_btns, 3, 0);
 
 	static const char * map[] = {
 		LV_SYMBOL_LEFT, LV_SYMBOL_MINUS, LV_SYMBOL_OK, LV_SYMBOL_PLUS, LV_SYMBOL_RIGHT, "" };
-	lv_btnmatrix_set_map(_obj, map);
-	lv_btnmatrix_set_btn_width(_obj, 2, 2);
-	lv_obj_add_event_cb(_obj, btns_cb, LV_EVENT_VALUE_CHANGED, this);
+	lv_btnmatrix_set_map(_btns, map);
+	lv_btnmatrix_set_btn_width(_btns, 2, 2);
+	lv_obj_add_event_cb(_btns, btns_cb, LV_EVENT_VALUE_CHANGED, this);
 };
 
-void FloatField::close()
+void FloatField::draw_close()
 {
-	lv_obj_set_style_border_width(_spinbox, 0, 0);
-	lv_obj_set_style_text_color(_spinbox, COLOR_GREY, 0);
-    // lv_textarea_set_cursor_pos(_spinbox, 0);
-	// lv_label_set_text_fmt(_btn_lbl, "%.02f", *value);
-	// lv_obj_del(_spinbox);
-	MenuItem::close();
+	lv_label_set_text_fmt(_btn_lbl, "%.02f", *value);
+
+	lv_obj_del(_spinbox);
+	lv_obj_del(_btns);
 };
 
 /* static */ void FloatField::btns_cb(lv_event_t * e)
@@ -213,34 +219,38 @@ void FloatField::close()
 };
 
 /*** SubMenu ***************************************************************************************/
+extern lv_indev_t*	_indev_keypad;
 void SubMenu::draw_open()
 {
-	// If obj then already open
-	if(_obj)
-		return;
 
 	lv_obj_t *lv_parent = lv_layer_top();
 
-	// list
-	if(_obj)
-	{
-		WARNING("Free prev _obj!");
-		lv_obj_del(_obj);
-	};
+	// FIXME leaks:
+	lv_group_t* grp = lv_group_create();
+	lv_indev_set_group(_indev_keypad, grp);
+	lv_group_set_editing(grp, false);
+	// lv_group_set_focus_cb(grp, group_focus_cb);
 
-	_obj = lv_list_create(lv_parent);
-	lv_obj_align(_obj, LV_ALIGN_LEFT_MID, 0, 0);
-	lv_obj_set_size(_obj, LV_PCT(50), LV_PCT(100));
+    lv_group_set_default(grp);
 
-	draw_first_btn(_obj); // "back" for, "close" for Root
+	_list = lv_list_create(lv_parent);
+	lv_obj_align(_list, LV_ALIGN_LEFT_MID, 0, 0);
+	lv_obj_set_size(_list, LV_PCT(50), LV_PCT(100));
+
+	draw_first_btn(_list); // "back" for, "close" for Root
 
 	// TODO: dismantle lambda into static member so draw_item can be protected
 	std::for_each(std::begin(_children), std::end(_children), 
 		[this](MenuItem* child) 
 		{
 			// FIXME: iterate without lambda so that draw_btn can be protected
-			child->draw_btn(this->_obj);
+			child->draw_btn(this->_list);
 		});
+};
+
+void SubMenu::draw_close()
+{
+	lv_obj_del(_list);
 };
 
 MenuSeparator* SubMenu::addSeparator(const char* text)
