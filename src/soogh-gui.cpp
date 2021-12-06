@@ -145,7 +145,7 @@ void SooghGUI::popScreen(Screen* scr)
         return;
     };
 
-	if(_scrstack.size() == 0)
+	if(_scrstack.empty())
 	{
 		ERROR("Empty ScreenStack. push(BOOT).");
         showMessage("ERROR", "ScreenStack empty! push(BOOT)");
@@ -159,6 +159,25 @@ void SooghGUI::popScreen(Screen* scr)
 
 	SOOGH_DBG("popped, will delete (eventually): %s(%p=%p)", top->name(), top, top.get());
 	return;
+};
+
+void SooghGUI::pushGroup(lv_group_t *grp)
+{
+	_groupstack.push(grp);
+	lv_indev_set_group(lvgl_indev_keyenc, grp);
+};
+
+void SooghGUI::popGroup()
+{
+	if(_scrstack.empty())
+	{
+		WARNING("POP(group) on empty stack.");
+		lv_indev_set_group(lvgl_indev_keyenc, nullptr);
+		return;
+	};
+
+	_groupstack.pop();
+	lv_indev_set_group(lvgl_indev_keyenc, _groupstack.top());
 };
 
 void SooghGUI::showMessage(const char* title, const char* text)

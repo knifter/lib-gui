@@ -4,15 +4,15 @@
 #include <stack>
 #include <memory>
 
-class SooghGUI;
 
 #include "soogh-conf.h"
 #include "soogh-lgfx.h"
 #include "soogh-screen.h"
 #include "soogh-event.h"
 
+typedef std::stack<lv_group_t*> GroupStack;
+
 class Screen;
-enum class ScreenType;
 
 class SooghGUI
 {
@@ -26,10 +26,14 @@ class SooghGUI
 		virtual ScreenPtr	pushScreen(ScreenPtr, void* data = nullptr);
 		virtual void		popScreen(Screen* = nullptr);
 
+		void 	pushGroup(lv_group_t*);
+		void	popGroup();
+
 		virtual void showMessage(const char* title, const char* text);
 
 	protected:
 		ScreenStack			_scrstack;
+		GroupStack  		_groupstack;
 		time_t				_prv_tick;
 		lv_obj_t			*_msgbox = nullptr;
 
