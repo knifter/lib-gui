@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <tools-keys.h>
 
+
 typedef enum : uint32_t
 {
 	KEY_NONE = 0x00,
@@ -47,5 +48,7 @@ typedef enum : uint32_t
 	KEY_ABC_LONG = KEY_ABC | KEYTOOL_LONG,
 	KEY_ABC_LONG_REPEAT = KEY_ABC | KEYTOOL_LONG_REPEAT,
 } soogh_event_t;
+
+const char* soogh_event_name(soogh_event_t e);
 
 #endif // __EVENT_H
