@@ -20,7 +20,7 @@ static void lv_disp_cb(lv_disp_drv_t*, const lv_area_t*, lv_color_t*);
     uint32_t            lvgl_enc_last_key = 0;
     bool                lvgl_enc_pressed = false;
     lv_indev_drv_t 		_lv_keys_drv;           /*Descriptor of a input device driver*/
-	lv_indev_t*			_indev_keypad;
+	lv_indev_t*			lvgl_indev_keyenc;
     static void lv_keys_cb(lv_indev_drv_t *, lv_indev_data_t *);
 #endif
 
@@ -58,7 +58,7 @@ void lvgl_init()
     lv_indev_drv_init(&_lv_keys_drv);             /*Basic initialization*/
     _lv_keys_drv.type = LV_INDEV_TYPE_ENCODER;    
     _lv_keys_drv.read_cb = lv_keys_cb;      /*Set your driver function*/
-    _indev_keypad = lv_indev_drv_register(&_lv_keys_drv);         /*Finally register the driver*/
+    lvgl_indev_keyenc = lv_indev_drv_register(&_lv_keys_drv);         /*Finally register the driver*/
     lvgl_enc_last_key = 0;
     lvgl_enc_pressed = false;
 #endif // SOOGH_ENCODER_KEYS
