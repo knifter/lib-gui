@@ -3,9 +3,16 @@
 #include "soogh-color.h"
 #include "soogh-gui.h"
 
+#ifdef SOOGH_DEBUG
+    #include <tools-log.h>
+    #define SOOGH_DBG     DBG
+#else
+    #define SOOGH_DBG(msg, ...)
+#endif
+
 Screen::Screen(SooghGUI &gui) : _gui(gui) 
 {
-	// DBG("CONSTRUCT %s(%p)", this->name(), this);
+	SOOGH_DBG("CONSTRUCT %s(%p)", this->name(), this);
     _screen = lv_obj_create(NULL);
     lv_obj_set_style_pad_all(_screen, 0, 0);
     lv_obj_set_style_border_width(_screen, 0, 0);
@@ -14,7 +21,7 @@ Screen::Screen(SooghGUI &gui) : _gui(gui)
 
 Screen::~Screen() 
 { 
-	// DBG("DESTROY %s(%p)", this->name(), this); 
+	SOOGH_DBG("DESTROY %s(%p)", this->name(), this); 
 	lv_obj_del(_screen); _screen = nullptr;
 };
 
