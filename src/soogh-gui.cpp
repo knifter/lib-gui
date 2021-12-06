@@ -1,13 +1,13 @@
 #include "soogh-gui.h"
 
 #include <lvgl.h>
-#include <tools-log.h>
 
 #include "soogh-conf.h"
 #include "soogh-screen.h"
 #include "soogh-event.h"
 #include "soogh-lgfx.h"
 
+#include <tools-log.h>
 #ifdef SOOGH_DEBUG
     #define SOOGH_DBG     DBG
 #else
@@ -62,7 +62,7 @@ time_t SooghGUI::loop()
 	if(scr != prev_scr)
 	{
 		if(prev_scr == nullptr)
-			DBG("GUI: <null> -> %s", scr->name());
+			DBG("GUI: <none> -> %s", scr->name());
 		else
 			DBG("GUI: %s -> %s", prev_scr->name(), scr->name());
 		prev_scr = scr;
@@ -118,7 +118,7 @@ bool SooghGUI::handle(soogh_event_t e)
 
 ScreenPtr SooghGUI::pushScreen(ScreenPtr scr, void* data)
 {
-	SOOGH_DBG("GUI: Push %s(%p)", scr->name(), scr);
+	SOOGH_DBG("GUI: Push %s(%p=%p)", scr->name(), scr, scr.get());
 	_scrstack.push(scr);
 	// GUI_DBG("GUI: Load %s(%p)", scr->name(), scr);
     scr->load();
@@ -157,7 +157,7 @@ void SooghGUI::popScreen(Screen* scr)
 	// make the screen below active again
     _scrstack.top()->load();
 
-	SOOGH_DBG("popped, will delete (eventually): %s(%p)", top->name(), top);
+	SOOGH_DBG("popped, will delete (eventually): %s(%p=%p)", top->name(), top, top.get());
 	return;
 };
 
