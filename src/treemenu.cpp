@@ -51,9 +51,9 @@ MenuItem* MenuItem::parent()
 
 MenuItem* MenuItem::root()
 {
-	MenuItem* root = _parent;
-	while(root->parent() != nullptr)
-		root = root->parent();
+	MenuItem* root = this;
+	while(root->_parent != nullptr)
+		root = root->_parent;
 	return root;
 };
 
@@ -69,7 +69,6 @@ void MenuItem::appendChild(MenuItem* child)
 
 void MenuItem::open()
 {
-	DBG(".");
 	if(_open)
 		return;
 
@@ -78,27 +77,32 @@ void MenuItem::open()
 		_parent->close_children();
 
 	draw_open();
+	_open = true;
 };
 
 void MenuItem::close_children()
 {
 	// propagate close through all children as well
-	std::for_each(std::begin(_children), std::end(_children), [](MenuItem* child) 
+	std::for_each(std::begin(_children), std::end(_children), [this](MenuItem* child) 
 	{
 		if(child->isOpen())
+		{
+			// DBG("%s: close child: %s", this->_text, child->_text);
 			child->close();
+		};
 	});
 };
 
 void MenuItem::close()
 {
-	DBG(".");
 	if(!_open)
 		return;
 
 	// make sure children are closed
 	close_children();
 
+	draw_close();
+	
 	// Call on-close event callback
 	if(_close_cb)
 		_close_cb(this, _close_data);
@@ -111,6 +115,19 @@ bool MenuItem::isOpen()
 { 
 	return _open; 
 };
+
+void MenuItem::onClose(treemenu_cb_t func, void* user_data) 
+{ 
+	_close_cb = func;
+	_close_data = user_data; 
+};
+
+void MenuItem::set_group(lv_group_t *group)
+{
+	TreeMenu* menu = static_cast<TreeMenu*>(this->root());
+	menu->group = group;
+};
+
 
 /*** Separator ***************************************************************************************/
 void MenuSeparator::draw_btn(lv_obj_t *lv_list)
@@ -219,7 +236,7 @@ void FloatField::draw_close()
 };
 
 /*** SubMenu ***************************************************************************************/
-extern lv_indev_t*	_indev_keypad;
+
 void SubMenu::draw_open()
 {
 
@@ -227,11 +244,11 @@ void SubMenu::draw_open()
 
 	// FIXME leaks:
 	lv_group_t* grp = lv_group_create();
-	lv_indev_set_group(_indev_keypad, grp);
 	lv_group_set_editing(grp, false);
 	// lv_group_set_focus_cb(grp, group_focus_cb);
-
     lv_group_set_default(grp);
+	// _gui.pushGroup(grp);
+	set_group(grp);
 
 	_list = lv_list_create(lv_parent);
 	lv_obj_align(_list, LV_ALIGN_LEFT_MID, 0, 0);
@@ -251,6 +268,7 @@ void SubMenu::draw_open()
 void SubMenu::draw_close()
 {
 	lv_obj_del(_list);
+	
 };
 
 MenuSeparator* SubMenu::addSeparator(const char* text)
@@ -286,7 +304,6 @@ void SubMenu::draw_btn(lv_obj_t *lv_list)
 
 /*static*/ void SubMenu::close_cb(lv_event_t *e)
 {
-	// Root* me = reinterpret_cast<Root*>(e->user_data);
 	SubMenu* me = static_cast<SubMenu*>(e->user_data);
 	me->close();
 };

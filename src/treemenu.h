@@ -30,11 +30,11 @@ class MenuItem //: public NonCopyable
 		MenuItem(MenuItem *parent, const char *text = "<none>");
 		virtual ~MenuItem();
 
-		virtual void close();
-		virtual void open();
-		virtual bool isOpen();
-		virtual void onClose(treemenu_cb_t func, void* user_data = nullptr) { _close_cb = func, _close_data = user_data; };
-		// virtual void onChange(treemenu_cb_t func, void* user_data = nullptr);
+		void close();
+		void open();
+		bool isOpen();
+		void onClose(treemenu_cb_t func, void* user_data = nullptr);
+		// void onChange(treemenu_cb_t func, void* user_data = nullptr);
 
 	// Should be protected
 		virtual void close_children();
@@ -47,9 +47,9 @@ class MenuItem //: public NonCopyable
 		MenuItem* parent();
 		MenuItem* root();
 		void appendChild(MenuItem* child);
+		void set_group(lv_group_t* group);
 
 	protected:
-		
 		MenuItem *_parent = nullptr;
 		MenuItemArray _children;
 
@@ -110,7 +110,6 @@ class SubMenu : public MenuItem
 	public:
 		SubMenu(SubMenu *parent, const char *text) : MenuItem(parent, text) {	};
 
-
 		// Construct children
 		MenuSeparator* 		addSeparator(const char* text);
 		SubMenu* 			addSubMenu(const char* text);
@@ -129,8 +128,10 @@ class SubMenu : public MenuItem
 class TreeMenu : public SubMenu
 {
 	public:
-		TreeMenu() : SubMenu(nullptr, "Root") { };
+		TreeMenu() : SubMenu(nullptr, "<root>") { };
 		void draw_first_btn(lv_obj_t *lv_list);
+	
+		lv_group_t *group = nullptr;
 };
 
 #endif // __TREEMENU_H
