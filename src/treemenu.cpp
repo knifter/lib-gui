@@ -116,7 +116,7 @@ bool MenuItem::isOpen()
 	return _open; 
 };
 
-void MenuItem::onClose(treemenu_cb_t func, void* user_data) 
+void MenuItem::onClose(treemenu_cb_t *func, void* user_data) 
 { 
 	_close_cb = func;
 	_close_data = user_data; 
@@ -135,20 +135,39 @@ void MenuSeparator::draw_btn(lv_obj_t *lv_list)
 	lv_list_add_text(lv_list, _text);
 };
 
-/*** FloatItem ***************************************************************************************/
+/*** ActionItem ***************************************************************************************/
+ActionField::ActionField(MenuItem *parent, const char *text, treemenu_cb_t *func, void* data) : MenuItem(parent, text)
+{
+	_change_cb = func; 
+	_change_data = data;
+};
+
+void ActionField::draw_btn(lv_obj_t *lv_list)
+{
+	lv_obj_t *btn = lv_list_add_btn(lv_list, nullptr, _text);
+	lv_obj_add_event_cb(btn, click_cb, LV_EVENT_CLICKED, this);
+};
+/* static */ void ActionField::click_cb(lv_event_t *e)
+{
+	ActionField* me = static_cast<ActionField*>(e->user_data);
+
+	if(me->_change_cb)
+		me->_change_cb(me, me->_change_data);
+};
+
+/*** FloatField ***************************************************************************************/
 void FloatField::draw_btn(lv_obj_t *lv_list)
 {
 	// TODO: can this be moved to MenuItem?
-	_btn = lv_list_add_btn(lv_list, nullptr, _text);
-	lv_obj_add_event_cb(_btn, click_cb, LV_EVENT_CLICKED, this);
-	lv_obj_set_flex_flow(_btn, LV_FLEX_FLOW_ROW_WRAP);
-	lv_obj_set_style_pad_row(_btn, 3, 0);
+	lv_obj_t *btn = lv_list_add_btn(lv_list, nullptr, _text);
+	lv_obj_add_event_cb(btn, click_cb, LV_EVENT_CLICKED, this);
+	lv_obj_set_flex_flow(btn, LV_FLEX_FLOW_ROW_WRAP);
+	lv_obj_set_style_pad_row(btn, 3, 0);
 
-	_btn_lbl = lv_label_create(_btn);
+	_btn_lbl = lv_label_create(btn);
 	lv_label_set_text_fmt(_btn_lbl, "%.02f", *value);
 	lv_obj_set_flex_grow(_btn_lbl, 1);
 	lv_obj_set_style_text_color(_btn_lbl, COLOR_GREY, 0);
-
 };
 
 /* static */ void FloatField::click_cb(lv_event_t *e) // static
@@ -278,15 +297,17 @@ MenuSeparator* SubMenu::addSeparator(const char* text)
 
 SubMenu* SubMenu::addSubMenu(const char* text)
 {
-	SubMenu *child = new SubMenu(this, text);
-	// appendChild(child);
-	return child;
+	return new SubMenu(this, text);
 };
 
 FloatField* SubMenu::addFloat(const char* name, float* f)
 {
-	FloatField* item = new FloatField(this, name, f);
-	return item;
+	return new FloatField(this, name, f);
+};
+
+ActionField* SubMenu::addAction(const char* name, treemenu_cb_t *func, void *data)
+{
+	return new ActionField(this, name, func, data);
 };
 
 void SubMenu::draw_first_btn(lv_obj_t *lv_list)

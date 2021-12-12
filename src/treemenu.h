@@ -33,7 +33,7 @@ class MenuItem //: public NonCopyable
 		void close();
 		void open();
 		bool isOpen();
-		void onClose(treemenu_cb_t func, void* user_data = nullptr);
+		void onClose(treemenu_cb_t *func, void* user_data = nullptr);
 		// void onChange(treemenu_cb_t func, void* user_data = nullptr);
 
 	// Should be protected
@@ -60,8 +60,8 @@ class MenuItem //: public NonCopyable
 		// Callbacks
 		treemenu_cb_t 	*_close_cb = nullptr;
 		void 			*_close_data = nullptr;
-		// treemenu_cb_t 	*_change_cb = nullptr;
-		// void 			*_change_data = nullptr;
+		treemenu_cb_t 	*_change_cb = nullptr;
+		void 			*_change_data = nullptr;
 };
 
 class MenuSeparator : public MenuItem
@@ -73,6 +73,20 @@ class MenuSeparator : public MenuItem
 		void draw_btn(lv_obj_t *lv_list);
 		void draw_open() {};
 		void draw_close() {};
+};
+
+class ActionField : public MenuItem
+{
+ 	public:
+ 		ActionField(MenuItem *parent, const char *text, treemenu_cb_t *func, void* data = nullptr);
+
+	protected:
+		void draw_btn(lv_obj_t *lv_list);
+		void draw_open() {};
+		void draw_close() {};
+
+	private: // Callbacks
+		static void click_cb(lv_event_t *e);
 };
 
 class FloatField : public MenuItem
@@ -97,7 +111,7 @@ class FloatField : public MenuItem
 		int digits();
 	private:
 		//draw_btn
-		lv_obj_t *_btn = nullptr;
+		// lv_obj_t *_btn = nullptr;
 
 		//draw_open/close
 		lv_obj_t *_btns = nullptr;
@@ -114,6 +128,7 @@ class SubMenu : public MenuItem
 		MenuSeparator* 		addSeparator(const char* text);
 		SubMenu* 			addSubMenu(const char* text);
 		FloatField* 		addFloat(const char* name, float* f);
+		ActionField*		addAction(const char* name, treemenu_cb_t func, void* data = nullptr);
 
 	protected:
 		void draw_btn(lv_obj_t *lv_list);
