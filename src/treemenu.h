@@ -41,8 +41,8 @@ class MenuItem //: public NonCopyable
 
 		virtual void draw_btn(lv_obj_t *lv_list) = 0;
 	protected:
-		virtual void draw_open() = 0;
-		virtual void draw_close() = 0;
+		virtual void draw_open() {};
+		virtual void draw_close() {};
 
 		MenuItem* parent();
 		MenuItem* root();
@@ -71,8 +71,6 @@ class MenuSeparator : public MenuItem
 
 	protected:
 		void draw_btn(lv_obj_t *lv_list);
-		void draw_open() {};
-		void draw_close() {};
 };
 
 class BooleanField : public MenuItem
@@ -92,9 +90,6 @@ class BooleanField : public MenuItem
 	protected:
 		booltype_t _type;
 		void draw_btn(lv_obj_t *lv_list);
-		void draw_open() {};
-		void draw_close() {};
-
 		
 	private: // Callbacks
 		lv_obj_t *_sw;
@@ -108,8 +103,6 @@ class ActionField : public MenuItem
 
 	protected:
 		void draw_btn(lv_obj_t *lv_list);
-		void draw_open() {};
-		void draw_close() {};
 
 	private: // Callbacks
 		static void click_cb(lv_event_t *e);
@@ -162,7 +155,6 @@ class SubMenu : public MenuItem
 		void draw_btn(lv_obj_t *lv_list);
 		void draw_open();
 		void draw_close();
-		virtual void draw_first_btn(lv_obj_t *lv_list);
 		static void close_cb(lv_event_t *e);
 	private:
 		lv_obj_t *_list = nullptr;
@@ -173,7 +165,6 @@ class TreeMenu : public SubMenu
 	public:
 		TreeMenu() : SubMenu(nullptr, "<root>") { };
 		~TreeMenu();
-		void draw_first_btn(lv_obj_t *lv_list);
 	
 		lv_group_t *group = nullptr;
 };

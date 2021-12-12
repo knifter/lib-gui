@@ -312,7 +312,12 @@ void SubMenu::draw_open()
 	lv_obj_align(_list, LV_ALIGN_LEFT_MID, 0, 0);
 	lv_obj_set_size(_list, LV_PCT(80), LV_PCT(100));
 
-	draw_first_btn(_list); // "back" for, "close" for Root
+	if(!_parent)
+	{
+		// Exit button
+		lv_obj_t *btn = lv_list_add_btn(_list, LV_SYMBOL_CLOSE, "Close");
+		lv_obj_add_event_cb(btn, SubMenu::close_cb, LV_EVENT_CLICKED, this);
+	};
 
 	// TODO: dismantle lambda into static member so draw_item can be protected
 	std::for_each(std::begin(_children), std::end(_children), 
@@ -358,13 +363,6 @@ BooleanField* SubMenu::addCheckbox(const char* name, bool *b)
 	return new BooleanField(this, name, b, BooleanField::BOOLTYPE_CHECKBOX);
 };
 
-void SubMenu::draw_first_btn(lv_obj_t *lv_list)
-{
-	// Exit button
-	lv_obj_t *btn = lv_list_add_btn(lv_list, LV_SYMBOL_LEFT, "Back");
-	lv_obj_add_event_cb(btn, SubMenu::close_cb, LV_EVENT_CLICKED, this);
-};
-
 void SubMenu::draw_btn(lv_obj_t *lv_list)
 {
 	lv_obj_t *btn = lv_list_add_btn(lv_list, LV_SYMBOL_RIGHT, _text);
@@ -383,11 +381,4 @@ TreeMenu::~TreeMenu()
 	// We need to close (remove widgets) the menu before free-ing it
 	// But needs to be done here on the root menu and derived class: the vtable is gone in ~MenuItem
 	close();
-};
-
-void TreeMenu::draw_first_btn(lv_obj_t *lv_list)
-{
-	// Exit button
-	lv_obj_t *btn = lv_list_add_btn(lv_list, LV_SYMBOL_CLOSE, "Close");
-	lv_obj_add_event_cb(btn, SubMenu::close_cb, LV_EVENT_CLICKED, this);
 };
