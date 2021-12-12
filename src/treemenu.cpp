@@ -2,12 +2,7 @@
 
 #include <soogh.h>
 
-// #include <memory>
-#include <vector>
-
 #include <tools-log.h>
-#include <tools-nocopy.h>
-
 
 /*
 Class hierarchy:
@@ -30,11 +25,8 @@ MenuItem::MenuItem(MenuItem *parent, const char *text) : _parent(parent), _text(
 MenuItem::~MenuItem()
 {
 	// This will recursively(!) delete all children, bottom up.
-	std::for_each(std::begin(_children), std::end(_children), [](MenuItem* child) 
-	{
-		// DBG("DELETE_CHILD(%s)", child->_text);
+	for(auto child: _children)
 		delete child;
-	});
 
 	if(_open)
 	{
@@ -83,14 +75,15 @@ void MenuItem::close_children()
 {
 	// DBG("close_children(of %s)", _text);
 	// propagate close through all children as well
-	std::for_each(std::begin(_children), std::end(_children), [this](MenuItem* child) 
+	for(auto child: _children)
 	{
 		if(child->isOpen())
 		{
 			// DBG("%s: close child: %s", this->_text, child->_text);
 			child->close();
 		};
-	});
+	};
+
 };
 
 void MenuItem::close()
@@ -319,13 +312,8 @@ void SubMenu::draw_open()
 		lv_obj_add_event_cb(btn, SubMenu::close_cb, LV_EVENT_CLICKED, this);
 	};
 
-	// TODO: dismantle lambda into static member so draw_item can be protected
-	std::for_each(std::begin(_children), std::end(_children), 
-		[this](MenuItem* child) 
-		{
-			// FIXME: iterate without lambda so that draw_btn can be protected
-			child->draw_btn(this->_list);
-		});
+	for(auto child: _children)
+		child->draw_btn(_list);
 };
 
 void SubMenu::draw_close()

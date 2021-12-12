@@ -4,7 +4,7 @@
 #include <soogh.h>
 
 // #include <memory>
-#include <vector>
+#include <list>
 
 #include <tools-log.h>
 #include <tools-nocopy.h>
@@ -23,7 +23,7 @@ class MenuItem;
 
 typedef void treemenu_cb_t(MenuItem* item, void* user_data);
 
-typedef std::vector<MenuItem*> MenuItemArray;
+typedef std::list<MenuItem*> MenuItemArray;
 class MenuItem //: public NonCopyable
 {
 	public:
@@ -36,13 +36,12 @@ class MenuItem //: public NonCopyable
 		void onClose(treemenu_cb_t *func, void* user_data = nullptr);
 		// void onChange(treemenu_cb_t func, void* user_data = nullptr);
 
-	// Should be protected
-		virtual void close_children();
-
-		virtual void draw_btn(lv_obj_t *lv_list) = 0;
 	protected:
+		virtual void close_children();
+		virtual void draw_btn(lv_obj_t *lv_list) = 0;
 		virtual void draw_open() {};
 		virtual void draw_close() {};
+		friend class SubMenu;
 
 		MenuItem* parent();
 		MenuItem* root();
@@ -62,6 +61,9 @@ class MenuItem //: public NonCopyable
 		void 			*_close_data = nullptr;
 		treemenu_cb_t 	*_change_cb = nullptr;
 		void 			*_change_data = nullptr;
+
+	public:
+		// TODO: disable copy constructor
 };
 
 class MenuSeparator : public MenuItem
