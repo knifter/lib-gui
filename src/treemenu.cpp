@@ -135,6 +135,44 @@ void MenuSeparator::draw_btn(lv_obj_t *lv_list)
 	lv_list_add_text(lv_list, _text);
 };
 
+/*** BooleanField ***************************************************************************************/
+void BooleanField::draw_btn(lv_obj_t *lv_list)
+{
+	lv_obj_t *btn = lv_list_add_btn(lv_list, nullptr, _text);
+	lv_obj_set_flex_flow(btn, LV_FLEX_FLOW_ROW_WRAP);
+	lv_obj_set_style_pad_row(btn, 3, 0);
+
+	switch(_type)
+	{
+		case BOOLTYPE_CHECKBOX:  
+			_sw = lv_checkbox_create(btn); 
+			lv_checkbox_set_text_static(_sw, ""); 
+			break;
+		case BOOLTYPE_SWITCH:	 _sw = lv_switch_create(btn); break;
+		default: return;
+	};
+	
+	// lv_obj_set_flex_grow(_sw, 1);
+	// lv_obj_set_style_min_height(_sw, 0, 0);
+	lv_obj_set_size(_sw, 40, 20);
+
+	if(*value == true)
+    	lv_obj_add_state(_sw, LV_STATE_CHECKED);
+
+	lv_obj_add_event_cb(_sw, click_cb, LV_EVENT_CLICKED, this);
+	lv_obj_add_event_cb(btn, click_cb, LV_EVENT_CLICKED, this);
+};
+/* static */ void BooleanField::click_cb(lv_event_t *e)
+{
+	BooleanField* me = static_cast<BooleanField*>(e->user_data);
+
+	(*(me->value)) = !(*(me->value));
+	if(*(me->value))
+    	lv_obj_add_state(me->_sw, LV_STATE_CHECKED);
+	else
+		lv_obj_clear_state(me->_sw, LV_STATE_CHECKED);
+};
+
 /*** ActionItem ***************************************************************************************/
 ActionField::ActionField(MenuItem *parent, const char *text, treemenu_cb_t *func, void* data) : MenuItem(parent, text)
 {
@@ -166,7 +204,7 @@ void FloatField::draw_btn(lv_obj_t *lv_list)
 
 	_btn_lbl = lv_label_create(btn);
 	lv_label_set_text_fmt(_btn_lbl, "%.02f", *value);
-	lv_obj_set_flex_grow(_btn_lbl, 1);
+	// lv_obj_set_flex_grow(_btn_lbl, 1);
 	lv_obj_set_style_text_color(_btn_lbl, COLOR_GREY, 0);
 };
 
@@ -271,7 +309,7 @@ void SubMenu::draw_open()
 
 	_list = lv_list_create(lv_parent);
 	lv_obj_align(_list, LV_ALIGN_LEFT_MID, 0, 0);
-	lv_obj_set_size(_list, LV_PCT(50), LV_PCT(100));
+	lv_obj_set_size(_list, LV_PCT(80), LV_PCT(100));
 
 	draw_first_btn(_list); // "back" for, "close" for Root
 
@@ -308,6 +346,16 @@ FloatField* SubMenu::addFloat(const char* name, float* f)
 ActionField* SubMenu::addAction(const char* name, treemenu_cb_t *func, void *data)
 {
 	return new ActionField(this, name, func, data);
+};
+
+BooleanField* SubMenu::addSwitch(const char* name, bool *b)
+{
+	return new BooleanField(this, name, b, BooleanField::BOOLTYPE_SWITCH);
+};
+
+BooleanField* SubMenu::addCheckbox(const char* name, bool *b)
+{
+	return new BooleanField(this, name, b, BooleanField::BOOLTYPE_CHECKBOX);
 };
 
 void SubMenu::draw_first_btn(lv_obj_t *lv_list)

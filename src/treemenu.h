@@ -75,6 +75,32 @@ class MenuSeparator : public MenuItem
 		void draw_close() {};
 };
 
+class BooleanField : public MenuItem
+{
+ 	public:
+		typedef enum
+		{
+			BOOLTYPE_SWITCH,
+			BOOLTYPE_CHECKBOX
+		} booltype_t;
+
+ 		BooleanField(MenuItem *parent, const char *text, bool *b, booltype_t type = BOOLTYPE_SWITCH) 
+		 	: MenuItem(parent, text), value(b), _type(type) {};
+
+		bool *value;
+
+	protected:
+		booltype_t _type;
+		void draw_btn(lv_obj_t *lv_list);
+		void draw_open() {};
+		void draw_close() {};
+
+		
+	private: // Callbacks
+		lv_obj_t *_sw;
+		static void click_cb(lv_event_t *e);
+};
+
 class ActionField : public MenuItem
 {
  	public:
@@ -129,6 +155,8 @@ class SubMenu : public MenuItem
 		SubMenu* 			addSubMenu(const char* text);
 		FloatField* 		addFloat(const char* name, float* f);
 		ActionField*		addAction(const char* name, treemenu_cb_t func, void* data = nullptr);
+		BooleanField*		addSwitch(const char* name, bool* );
+		BooleanField*		addCheckbox(const char* name, bool* );
 
 	protected:
 		void draw_btn(lv_obj_t *lv_list);
