@@ -172,6 +172,7 @@ class TreeMenu : public SubMenu
 {
 	public:
 		TreeMenu() : SubMenu(nullptr, "<root>") { };
+		~TreeMenu();
 		void draw_first_btn(lv_obj_t *lv_list);
 	
 		lv_group_t *group = nullptr;

@@ -22,18 +22,17 @@ Class hierarchy:
 /*** MenuItem ***************************************************************************************/
 MenuItem::MenuItem(MenuItem *parent, const char *text) : _parent(parent), _text(text)
 {
-	// DBG("CONSTRUCT(%s) = %p", name, this);
+	// DBG("CONSTRUCT(%s) = %p", _text, this);
 	if(_parent)
 		_parent->appendChild(this);
 };
 
 MenuItem::~MenuItem()
 {
-	close();
-
 	// This will recursively(!) delete all children, bottom up.
 	std::for_each(std::begin(_children), std::end(_children), [](MenuItem* child) 
 	{
+		// DBG("DELETE_CHILD(%s)", child->_text);
 		delete child;
 	});
 
@@ -71,7 +70,7 @@ void MenuItem::open()
 {
 	if(_open)
 		return;
-
+	// DBG("open(%s)", _text);
 	// close other opened siblings
 	if(_parent)
 		_parent->close_children();
@@ -82,6 +81,7 @@ void MenuItem::open()
 
 void MenuItem::close_children()
 {
+	// DBG("close_children(of %s)", _text);
 	// propagate close through all children as well
 	std::for_each(std::begin(_children), std::end(_children), [this](MenuItem* child) 
 	{
@@ -97,6 +97,8 @@ void MenuItem::close()
 {
 	if(!_open)
 		return;
+
+	// DBG("close(%s)", _text);
 
 	// make sure children are closed
 	close_children();
@@ -293,7 +295,6 @@ void FloatField::draw_close()
 };
 
 /*** SubMenu ***************************************************************************************/
-
 void SubMenu::draw_open()
 {
 
@@ -324,8 +325,7 @@ void SubMenu::draw_open()
 
 void SubMenu::draw_close()
 {
-	lv_obj_del(_list);
-	
+	lv_obj_del(_list);	
 };
 
 MenuSeparator* SubMenu::addSeparator(const char* text)
@@ -378,10 +378,16 @@ void SubMenu::draw_btn(lv_obj_t *lv_list)
 };
 
 /*** Root ***************************************************************************************/
+TreeMenu::~TreeMenu()
+{
+	// We need to close (remove widgets) the menu before free-ing it
+	// But needs to be done here on the root menu and derived class: the vtable is gone in ~MenuItem
+	close();
+};
+
 void TreeMenu::draw_first_btn(lv_obj_t *lv_list)
 {
 	// Exit button
 	lv_obj_t *btn = lv_list_add_btn(lv_list, LV_SYMBOL_CLOSE, "Close");
 	lv_obj_add_event_cb(btn, SubMenu::close_cb, LV_EVENT_CLICKED, this);
 };
-
