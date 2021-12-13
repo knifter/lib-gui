@@ -188,6 +188,14 @@ void ActionField::draw_btn(lv_obj_t *lv_list)
 };
 
 /*** FloatField ***************************************************************************************/
+FloatField::FloatField(MenuItem *parent, const char *text, float *f) : MenuItem(parent, text), value(f) 
+{ 
+	if(*value < min_value)
+		min_value = *value;
+	if(*value > max_value)
+		max_value = *value;
+};
+
 void FloatField::draw_btn(lv_obj_t *lv_list)
 {
 	// TODO: can this be moved to MenuItem?
@@ -230,11 +238,16 @@ void FloatField::draw_open()
 		lv_obj_set_pos(_spinbox, bpos.x1 - 10, bpos.y1 - 10);
 		lv_obj_set_size(_spinbox, w + 20, h + 20);
 
-		lv_spinbox_set_range(_spinbox, min_value * decimals, max_value*decimals);
+
 		int digits = this->digits();
+        int factor = pow(10, decimals);
+		lv_spinbox_set_range(_spinbox, min_value*factor, max_value*factor);
 		lv_spinbox_set_digit_format(_spinbox, digits, digits - decimals);
-		lv_spinbox_set_value(_spinbox, *value * 100);
+		lv_spinbox_set_value(_spinbox, (*value) * factor);
+    	// DBG("min/max = %f/%f, val = %f, digs = %d, dec = %d, mult = %f", min_value, max_value, *value, digits, decimals, pow(10, decimals));
 	};
+
+#ifdef SOOGH_TOUCH
 	// And floating buttons just below the spinbox
 	_btns = lv_btnmatrix_create(lv_layer_top());
 	{
@@ -257,14 +270,21 @@ void FloatField::draw_open()
 
 		lv_obj_add_event_cb(_btns, btns_cb, LV_EVENT_VALUE_CHANGED, this);
 	};
+#endif // SOOGH_TOUCH
+
+    // FIXME leaking
+	lv_group_t* grp = lv_group_create();
+	lv_group_add_obj(grp, _spinbox);
+	lv_group_set_editing(grp, true);
+	set_group(grp);
 };
 
 void FloatField::draw_close()
 {
 	lv_label_set_text_fmt(_btn_lbl, "%.02f", *value);
 
-	lv_obj_del(_spinbox);
-	lv_obj_del(_btns);
+	lv_obj_del(_spinbox); 	_spinbox=nullptr;
+	lv_obj_del(_btns);		_btns = nullptr;
 };
 
 /* static */ void FloatField::btns_cb(lv_event_t * e)

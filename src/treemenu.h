@@ -114,7 +114,7 @@ class ActionField : public MenuItem
 class FloatField : public MenuItem
 {
  	public:
- 		FloatField(MenuItem *parent, const char *text, float *f) : MenuItem(parent, text), value(f) { };
+ 		FloatField(MenuItem *parent, const char *text, float *f);
 
 	public: // member vars
 		float *value;
