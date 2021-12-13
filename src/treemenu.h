@@ -42,6 +42,7 @@ class MenuItem //: public NonCopyable
 		virtual void draw_open() {};
 		virtual void draw_close() {};
 		friend class SubMenu;
+		friend class TreeMenu;
 
 		MenuItem* parent();
 		MenuItem* root();
@@ -157,9 +158,12 @@ class SubMenu : public MenuItem
 		void draw_btn(lv_obj_t *lv_list);
 		void draw_open();
 		void draw_close();
-		static void close_cb(lv_event_t *e);
-	private:
+		static void click_cb(lv_event_t *e);
+
 		lv_obj_t *_list = nullptr;
+		lv_obj_t *_btn = nullptr;
+		lv_obj_t *_btn_img = nullptr;
+		lv_group_t *_grp = nullptr;
 };
 
 class TreeMenu : public SubMenu
@@ -167,8 +171,14 @@ class TreeMenu : public SubMenu
 	public:
 		TreeMenu() : SubMenu(nullptr, "<root>") { };
 		~TreeMenu();
-	
+
 		lv_group_t *group = nullptr;
+	protected:
+		void draw_open();
+		void draw_close();
+		void draw_btn() {};
+		static void close_cb(lv_event_t *e);
+
 };
 
 #endif // __TREEMENU_H

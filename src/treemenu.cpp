@@ -123,7 +123,6 @@ void MenuItem::set_group(lv_group_t *group)
 	menu->group = group;
 };
 
-
 /*** Separator ***************************************************************************************/
 void MenuSeparator::draw_btn(lv_obj_t *lv_list)
 {
@@ -220,45 +219,44 @@ int FloatField::digits()
 void FloatField::draw_open()
 {
 	// get coords of label
-	lv_area_t coor;
-	lv_obj_get_coords(_btn_lbl, &coor);
+	lv_area_t bpos;
+	lv_obj_get_coords(_btn_lbl, &bpos);
 
 	// draw (floating) spinbox right over label
 	_spinbox = lv_spinbox_create(lv_layer_top());
-	lv_obj_set_pos(_spinbox, coor.x1-5, coor.y1-5);
-	// lv_obj_set_style_pad_all(_spinbox, 3, 0);
+	{
+		const int w = bpos.x2 - bpos.x1;
+		const int h = bpos.y2 - bpos.y1;
+		lv_obj_set_pos(_spinbox, bpos.x1 - 10, bpos.y1 - 10);
+		lv_obj_set_size(_spinbox, w + 20, h + 20);
 
-	lv_spinbox_set_range(_spinbox, min_value * decimals, max_value*decimals);
-	int digits = this->digits();
-	lv_spinbox_set_digit_format(_spinbox, digits, digits - decimals);
-	lv_spinbox_set_value(_spinbox, *value * 100);
-
+		lv_spinbox_set_range(_spinbox, min_value * decimals, max_value*decimals);
+		int digits = this->digits();
+		lv_spinbox_set_digit_format(_spinbox, digits, digits - decimals);
+		lv_spinbox_set_value(_spinbox, *value * 100);
+	};
 	// And floating buttons just below the spinbox
 	_btns = lv_btnmatrix_create(lv_layer_top());
-	lv_coord_t x, y, w, h;
-	x = coor.x1;
-	h = 50;
-	w = DISPLAY_WIDTH - coor.x1 - 10;
-
-	if(coor.y1 < DISPLAY_HEIGHT /2)
 	{
-		// place below spinbox
-		y = coor.y2;
-	}else{
-		// place above spinbox
-		y = coor.y1 - h;
+		lv_obj_set_size(_btns, LV_PCT(80), 50);
+		lv_obj_set_style_pad_all(_btns, 3, 0);
+
+		static const char * map[] = {
+			LV_SYMBOL_LEFT, LV_SYMBOL_MINUS, LV_SYMBOL_OK, LV_SYMBOL_PLUS, LV_SYMBOL_RIGHT, "" };
+		lv_btnmatrix_set_map(_btns, map);
+		lv_btnmatrix_set_btn_width(_btns, 2, 2);
+
+		if(bpos.y1 < DISPLAY_HEIGHT /2)
+		{
+			// place below spinbox
+			lv_obj_align_to(_btns, _spinbox, LV_ALIGN_OUT_BOTTOM_MID, 0, 0);
+		}else{
+			// place above spinbox
+			lv_obj_align_to(_btns, _spinbox, LV_ALIGN_OUT_TOP_MID, 0, 0);
+		};
+
+		lv_obj_add_event_cb(_btns, btns_cb, LV_EVENT_VALUE_CHANGED, this);
 	};
-
-	// DBG("btns xywh = %d %d %d %d", x, y, w, h);
-	lv_obj_set_size(_btns, w, h);
-	lv_obj_set_pos(_btns, x, y);
-	lv_obj_set_style_pad_all(_btns, 3, 0);
-
-	static const char * map[] = {
-		LV_SYMBOL_LEFT, LV_SYMBOL_MINUS, LV_SYMBOL_OK, LV_SYMBOL_PLUS, LV_SYMBOL_RIGHT, "" };
-	lv_btnmatrix_set_map(_btns, map);
-	lv_btnmatrix_set_btn_width(_btns, 2, 2);
-	lv_obj_add_event_cb(_btns, btns_cb, LV_EVENT_VALUE_CHANGED, this);
 };
 
 void FloatField::draw_close()
@@ -291,26 +289,21 @@ void FloatField::draw_close()
 void SubMenu::draw_open()
 {
 
-	lv_obj_t *lv_parent = lv_layer_top();
+	lv_obj_t *lv_parent = _btn;
 
-	// FIXME leaks:
-	lv_group_t* grp = lv_group_create();
-	lv_group_set_editing(grp, false);
-	// lv_group_set_focus_cb(grp, group_focus_cb);
-    lv_group_set_default(grp);
-	// _gui.pushGroup(grp);
-	set_group(grp);
+    lv_img_set_src(_btn_img, LV_SYMBOL_DOWN);
 
+	// _grp = lv_group_create();
+	// lv_group_set_editing(grp, false);
+	// // lv_group_set_focus_cb(grp, group_focus_cb);
+    // lv_group_set_default(grp);
+	// // _gui.pushGroup(grp);
+	// set_group(grp);
+
+	// The mnu is a list
 	_list = lv_list_create(lv_parent);
-	lv_obj_align(_list, LV_ALIGN_LEFT_MID, 0, 0);
-	lv_obj_set_size(_list, LV_PCT(80), LV_PCT(100));
-
-	if(!_parent)
-	{
-		// Exit button
-		lv_obj_t *btn = lv_list_add_btn(_list, LV_SYMBOL_CLOSE, "Close");
-		lv_obj_add_event_cb(btn, SubMenu::close_cb, LV_EVENT_CLICKED, this);
-	};
+	lv_obj_set_style_border_width(_list, 0, 0);
+	lv_obj_set_height(_list, 45*_children.size());
 
 	for(auto child: _children)
 		child->draw_btn(_list);
@@ -318,7 +311,31 @@ void SubMenu::draw_open()
 
 void SubMenu::draw_close()
 {
-	lv_obj_del(_list);	
+	lv_obj_del(_list); _list = nullptr;
+	lv_img_set_src(_btn_img, LV_SYMBOL_RIGHT);
+};
+
+void SubMenu::draw_btn(lv_obj_t *lv_list)
+{
+	// construct btn manually to be able to change icon
+	_btn = lv_list_add_btn(lv_list, nullptr, nullptr);
+    _btn_img = lv_img_create(_btn);
+    lv_img_set_src(_btn_img, LV_SYMBOL_RIGHT);
+	lv_obj_t * label = lv_label_create(_btn);
+	lv_label_set_text(label, _text);
+	lv_label_set_long_mode(label, LV_LABEL_LONG_SCROLL_CIRCULAR);
+	lv_obj_set_flex_grow(label, 1);
+
+	lv_obj_set_flex_flow(_btn, LV_FLEX_FLOW_ROW_WRAP);
+	lv_obj_add_event_cb(_btn, click_cb, LV_EVENT_CLICKED, this);
+};
+/* static */ void SubMenu::click_cb(lv_event_t *e) // static
+{
+	auto me = static_cast<SubMenu*>(e->user_data);
+	if(me->_open)
+		me->close();
+	else
+		me->open();
 };
 
 MenuSeparator* SubMenu::addSeparator(const char* text)
@@ -351,17 +368,6 @@ BooleanField* SubMenu::addCheckbox(const char* name, bool *b)
 	return new BooleanField(this, name, b, BooleanField::BOOLTYPE_CHECKBOX);
 };
 
-void SubMenu::draw_btn(lv_obj_t *lv_list)
-{
-	lv_obj_t *btn = lv_list_add_btn(lv_list, LV_SYMBOL_RIGHT, _text);
-	btn = btn;
-};
-
-/*static*/ void SubMenu::close_cb(lv_event_t *e)
-{
-	SubMenu* me = static_cast<SubMenu*>(e->user_data);
-	me->close();
-};
 
 /*** Root ***************************************************************************************/
 TreeMenu::~TreeMenu()
@@ -370,3 +376,39 @@ TreeMenu::~TreeMenu()
 	// But needs to be done here on the root menu and derived class: the vtable is gone in ~MenuItem
 	close();
 };
+
+void TreeMenu::draw_open()
+{
+
+	lv_obj_t *lv_parent = lv_layer_top();
+
+	_grp = lv_group_create();
+	lv_group_set_editing(_grp, false);
+	// lv_group_set_focus_cb(_grp, group_focus_cb);
+    lv_group_set_default(_grp);
+	set_group(_grp);
+
+	// The mnu is a list
+	_list = lv_list_create(lv_parent);
+	lv_obj_align(_list, LV_ALIGN_LEFT_MID, 0, 0);
+	lv_obj_set_size(_list, LV_PCT(80), LV_PCT(100));
+
+	// First (close) button
+	lv_obj_t *btn = lv_list_add_btn(_list, LV_SYMBOL_CLOSE, "Close");
+	lv_obj_add_event_cb(btn, TreeMenu::close_cb, LV_EVENT_CLICKED, this);
+
+	for(auto child: _children)
+		child->draw_btn(_list);
+};
+
+void TreeMenu::draw_close()
+{
+	lv_obj_del(_list); _list = nullptr;
+};
+
+/*static*/ void TreeMenu::close_cb(lv_event_t *e)
+{
+	SubMenu* me = static_cast<SubMenu*>(e->user_data);
+	me->close();
+};
+
