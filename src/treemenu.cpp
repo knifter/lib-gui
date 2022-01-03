@@ -245,6 +245,8 @@ void FloatField::draw_open()
 		lv_spinbox_set_digit_format(_spinbox, digits, digits - decimals);
 		lv_spinbox_set_value(_spinbox, (*value) * factor);
     	// DBG("min/max = %f/%f, val = %f, digs = %d, dec = %d, mult = %f", min_value, max_value, *value, digits, decimals, pow(10, decimals));
+
+		_spinbox->user_data = this;
 	};
 
 #ifdef SOOGH_TOUCH
@@ -513,6 +515,14 @@ void TreeMenu::sendKey(menukey_t key)
 			break;
 		case KEY_ESC:
 		{
+			if(obj->user_data)
+			{
+				DBG("obj has user-data");
+				MenuItem* item = static_cast<MenuItem*>(obj->user_data);
+				item->close();
+				lv_group_set_editing(_cgrp, false);
+				return;
+			};
 			if(lv_group_get_editing(_cgrp))
 			{	
 				DBG("group.edit -> false");
