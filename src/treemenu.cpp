@@ -214,7 +214,7 @@ int FloatField::digits()
 {
 	int min_digits = ceil(log10(min_value));
 	int max_digits = ceil(log10(max_value));
-	DBG("mindig = %d, maxdig = %d", min_digits, max_digits);
+	// DBG("mindig = %d, maxdig = %d", min_digits, max_digits);
 	return max(min_digits, max_digits) + decimals;
 };
 
@@ -409,6 +409,7 @@ void TreeMenu::draw_open()
 	lv_group_set_editing(_grp, false);
 	// lv_group_set_focus_cb(_grp, group_focus_cb);
     lv_group_set_default(_grp);
+	lv_indev_set_group(lvgl_indev_keyenc,  _grp);
 	set_group(_grp);
 
 	// The mnu is a list
@@ -449,86 +450,99 @@ void TreeMenu::sendKey(menukey_t key)
 {
 	if(!_cgrp)
 	{
-		DBG("No grp.");
-		return;
-	};
-
-	lv_obj_t *obj = lv_group_get_focused(_cgrp);
-	if(!obj)
-	{
-		DBG("No obj.");
+		WARNING("No grp.");
 		return;
 	};
 
 	bool editable_or_scrollable = true;
-	if(obj)
+	lv_obj_t *obj = lv_group_get_focused(_cgrp);
+	if(!obj)
 	{
-		editable_or_scrollable = lv_obj_is_editable(obj) || lv_obj_has_flag(obj, LV_OBJ_FLAG_SCROLLABLE);
-	}else{
-		DBG("no obj focussed.");
+		WARNING("No obj focussed");
+		return;
 	};
+	editable_or_scrollable = lv_obj_is_editable(obj) || lv_obj_has_flag(obj, LV_OBJ_FLAG_SCROLLABLE);
 
+	// DBG("edit_or_scrollable = %s, group.editing = %s", editable_or_scrollable ? "true": "false", lv_group_get_editing(_cgrp) ? "true":"false");
 	switch(key)
 	{
 		case KEY_NONE:
 			DBG("No key given.");
 			break;
+
 		case KEY_LEFT:
 			if(lv_group_get_editing(_cgrp))
 			{
-				DBG("group.send(LEFT)");
+				// DBG("group.send(LEFT)");
 				lv_group_send_data(_cgrp, LV_KEY_LEFT);
 			}else{
-				DBG("group.prev");
+				// DBG("group.prev");
 				lv_group_focus_prev(_cgrp);
 			};
 			break;
+
 		case KEY_RIGHT:
 			if(lv_group_get_editing(_cgrp))
 			{
-				DBG("group.send(RIGHT)");
+				// DBG("group.send(RIGHT)");
 				lv_group_send_data(_cgrp, LV_KEY_RIGHT);
 			}else{
-				DBG("group.next");
+				// DBG("group.next");
 				lv_group_focus_next(_cgrp);
 			};
 			break;
 
 		case KEY_ENTER:
-			if(editable_or_scrollable)
+			// PRESSED, RELEASE code from lv_indec.c(596).indev_encoder_proc()
+			if(!editable_or_scrollable)
 			{
-				DBG("obj.editable");
-				if(lv_group_get_editing(_cgrp))
+				// DBG("obj.send(PRESSED, RELEASED, SHORT_CLICKED, CLICKED)");
+				lv_event_send(obj, LV_EVENT_PRESSED, lvgl_indev_keyenc);
+				lv_event_send(obj, LV_EVENT_RELEASED, lvgl_indev_keyenc);
+				lv_event_send(obj, LV_EVENT_SHORT_CLICKED, lvgl_indev_keyenc);
+				lv_event_send(obj, LV_EVENT_CLICKED, lvgl_indev_keyenc);
+				break;
+			};
+			if(lv_group_get_editing(_cgrp))
+			{
+				// DBG("obj.send(PRESSED)");
+				lv_event_send(obj, LV_EVENT_PRESSED, lvgl_indev_keyenc);
+				//if !long_press_sent || lv_group_object_count(g) <= 1
+				if(lv_group_get_obj_count(_cgrp) < 2)
 				{
-					DBG("send(ENTER)");
+					// DBG("obj.send(RELEASED, SHORT_CLICKED, CLICKED)");
+					lv_event_send(obj, LV_EVENT_RELEASED, lvgl_indev_keyenc);
+					lv_event_send(obj, LV_EVENT_SHORT_CLICKED, lvgl_indev_keyenc);
+					lv_event_send(obj, LV_EVENT_CLICKED, lvgl_indev_keyenc);
+
+					// DBG("group.send(KEY_ENTER)");
 					lv_group_send_data(_cgrp, LV_KEY_ENTER);
 				}else{
-					DBG("group.edit -> true");
-					lv_group_set_editing(_cgrp, true);
+					lv_obj_clear_state(obj, LV_STATE_PRESSED);
 				};
-			}else{
-				DBG("obj.send(SHORT_CLICKED)");
-				lv_event_send(obj, LV_EVENT_SHORT_CLICKED, nullptr);
-				DBG("obj.send(CLICKED)");
-				lv_event_send(obj, LV_EVENT_CLICKED, nullptr);
+				break;
 			};
+			// DBG("group.set_edit(true)");
+			lv_group_set_editing(_cgrp, true);
 			break;
+
 		case KEY_ESC:
 		{
 			if(obj->user_data)
 			{
-				DBG("obj has user-data");
+				// DBG("obj has user-data");
 				MenuItem* item = static_cast<MenuItem*>(obj->user_data);
 				item->close();
+				lv_group_focus_prev(_cgrp);
 				lv_group_set_editing(_cgrp, false);
-				return;
+				break;
 			};
 			if(lv_group_get_editing(_cgrp))
 			{	
-				DBG("group.edit -> false");
+				// DBG("group.set_edit(false)");
 				lv_group_set_editing(_cgrp, false);
 			}else{
-				DBG("group.send(ESC)");
+				// DBG("group.send(ESC)");
 				lv_group_send_data(_cgrp, LV_KEY_ESC);
 			};
 			break;
