@@ -154,11 +154,14 @@ void BooleanField::draw_btn(lv_obj_t *lv_list)
 {
 	BooleanField* me = static_cast<BooleanField*>(e->user_data);
 
-	(*(me->value)) = !(*(me->value));
-	if(*(me->value))
-    	lv_obj_add_state(me->_sw, LV_STATE_CHECKED);
-	else
-		lv_obj_clear_state(me->_sw, LV_STATE_CHECKED);
+	// fake click on checkbox if click was on btn
+	if(e->target != me->_sw)
+	{
+		lv_event_send(me->_sw, LV_EVENT_PRESSED, nullptr);
+		lv_event_send(me->_sw, LV_EVENT_RELEASED, nullptr);
+	};
+
+	(*(me->value)) = lv_obj_has_state(me->_sw, LV_STATE_CHECKED);
 };
 
 /*** ActionItem ***************************************************************************************/
