@@ -5,6 +5,8 @@
 
 const char* soogh_event_name(soogh_event_t e)
 {
+	if(e == KEY_NONE)
+		return "KEY_NONE";
 	static char buf[32];
 	strcpy(buf, "KEY_");
 	if(e & KEY_A) strcat(buf, "A");
