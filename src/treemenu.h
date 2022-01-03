@@ -13,13 +13,14 @@
 /*
 	MenuItem (drawable: draw_item, draw_open)
 		SubMenu
-			TreeMenu(Menu)
+			TreeMenu
 		FloatItem
 		SwitchItem
 		ListItem
 */
 
 class MenuItem;
+class TreeMenu;
 
 typedef void treemenu_cb_t(MenuItem* item, void* user_data);
 
@@ -45,9 +46,8 @@ class MenuItem //: public NonCopyable
 		friend class TreeMenu;
 
 		MenuItem* parent();
-		MenuItem* root();
+		TreeMenu* root();
 		void appendChild(MenuItem* child);
-		void set_group(lv_group_t* group);
 
 	protected:
 		MenuItem *_parent = nullptr;
@@ -163,7 +163,6 @@ class SubMenu : public MenuItem
 		lv_obj_t *_list = nullptr;
 		lv_obj_t *_btn = nullptr;
 		lv_obj_t *_btn_img = nullptr;
-		lv_group_t *_grp = nullptr;
 };
 
 class TreeMenu : public SubMenu
@@ -172,8 +171,23 @@ class TreeMenu : public SubMenu
 		TreeMenu() : SubMenu(nullptr, "<root>") { };
 		~TreeMenu();
 
-		lv_group_t *group = nullptr;
+
+		enum menukey_t {
+			KEY_NONE,
+			KEY_LEFT = LV_KEY_LEFT,
+			KEY_RIGHT = LV_KEY_RIGHT,
+			KEY_ENTER = LV_KEY_ENTER,
+			KEY_ESC = LV_KEY_ESC
+		};
+
+		void sendKey(menukey_t key);
+		void set_group(lv_group_t* group);
+		lv_group_t* get_group();
+
 	protected:
+		lv_group_t *_grp = nullptr;
+		lv_group_t *_cgrp = nullptr;
+
 		void draw_open();
 		void draw_close();
 		void draw_btn() {};

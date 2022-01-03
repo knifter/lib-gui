@@ -40,12 +40,12 @@ MenuItem* MenuItem::parent()
 	return _parent;
 };
 
-MenuItem* MenuItem::root()
+TreeMenu* MenuItem::root()
 {
 	MenuItem* root = this;
 	while(root->_parent != nullptr)
 		root = root->_parent;
-	return root;
+	return static_cast<TreeMenu*>(root);
 };
 
 void MenuItem::appendChild(MenuItem* child)
@@ -115,12 +115,6 @@ void MenuItem::onClose(treemenu_cb_t *func, void* user_data)
 { 
 	_close_cb = func;
 	_close_data = user_data; 
-};
-
-void MenuItem::set_group(lv_group_t *group)
-{
-	TreeMenu* menu = static_cast<TreeMenu*>(this->root());
-	menu->group = group;
 };
 
 /*** Separator ***************************************************************************************/
@@ -230,6 +224,12 @@ void FloatField::draw_open()
 	lv_area_t bpos;
 	lv_obj_get_coords(_btn_lbl, &bpos);
 
+    // // FIXME leaking
+	// lv_group_t* grp = lv_group_create();
+	// lv_group_add_obj(grp, _spinbox);
+	// lv_group_set_editing(grp, true);
+	// root()->set_group(grp);
+
 	// draw (floating) spinbox right over label
 	_spinbox = lv_spinbox_create(lv_layer_top());
 	{
@@ -272,11 +272,10 @@ void FloatField::draw_open()
 	};
 #endif // SOOGH_TOUCH
 
-    // FIXME leaking
-	lv_group_t* grp = lv_group_create();
-	lv_group_add_obj(grp, _spinbox);
-	lv_group_set_editing(grp, true);
-	set_group(grp);
+	lv_group_t* g = root()->get_group();
+	// lv_group_add_obj(g, _spinbox);
+	lv_group_focus_obj(_spinbox);
+	lv_group_set_editing(g, true);
 };
 
 void FloatField::draw_close()
@@ -284,7 +283,9 @@ void FloatField::draw_close()
 	lv_label_set_text_fmt(_btn_lbl, "%.02f", *value);
 
 	lv_obj_del(_spinbox); 	_spinbox=nullptr;
+#ifdef SOOGH_TOUCH
 	lv_obj_del(_btns);		_btns = nullptr;
+#endif
 };
 
 /* static */ void FloatField::btns_cb(lv_event_t * e)
@@ -428,7 +429,99 @@ void TreeMenu::draw_close()
 
 /*static*/ void TreeMenu::close_cb(lv_event_t *e)
 {
-	SubMenu* me = static_cast<SubMenu*>(e->user_data);
+	TreeMenu* me = static_cast<TreeMenu*>(e->user_data);
 	me->close();
 };
 
+void TreeMenu::set_group(lv_group_t* g)
+{
+	_cgrp = g;
+};
+
+lv_group_t* TreeMenu::get_group()
+{
+	return _cgrp;
+};
+
+void TreeMenu::sendKey(menukey_t key)
+{
+	if(!_cgrp)
+	{
+		DBG("No grp.");
+		return;
+	};
+
+	lv_obj_t *obj = lv_group_get_focused(_cgrp);
+	if(!obj)
+	{
+		DBG("No obj.");
+		return;
+	};
+
+	bool editable_or_scrollable = true;
+	if(obj)
+	{
+		editable_or_scrollable = lv_obj_is_editable(obj) || lv_obj_has_flag(obj, LV_OBJ_FLAG_SCROLLABLE);
+	}else{
+		DBG("no obj focussed.");
+	};
+
+	switch(key)
+	{
+		case KEY_NONE:
+			DBG("No key given.");
+			break;
+		case KEY_LEFT:
+			if(lv_group_get_editing(_cgrp))
+			{
+				DBG("group.send(LEFT)");
+				lv_group_send_data(_cgrp, LV_KEY_LEFT);
+			}else{
+				DBG("group.prev");
+				lv_group_focus_prev(_cgrp);
+			};
+			break;
+		case KEY_RIGHT:
+			if(lv_group_get_editing(_cgrp))
+			{
+				DBG("group.send(RIGHT)");
+				lv_group_send_data(_cgrp, LV_KEY_RIGHT);
+			}else{
+				DBG("group.next");
+				lv_group_focus_next(_cgrp);
+			};
+			break;
+
+		case KEY_ENTER:
+			if(editable_or_scrollable)
+			{
+				DBG("obj.editable");
+				if(lv_group_get_editing(_cgrp))
+				{
+					DBG("send(ENTER)");
+					lv_group_send_data(_cgrp, LV_KEY_ENTER);
+				}else{
+					DBG("group.edit -> true");
+					lv_group_set_editing(_cgrp, true);
+				};
+			}else{
+				DBG("obj.send(SHORT_CLICKED)");
+				lv_event_send(obj, LV_EVENT_SHORT_CLICKED, nullptr);
+				DBG("obj.send(CLICKED)");
+				lv_event_send(obj, LV_EVENT_CLICKED, nullptr);
+			};
+			break;
+		case KEY_ESC:
+		{
+			if(lv_group_get_editing(_cgrp))
+			{	
+				DBG("group.edit -> false");
+				lv_group_set_editing(_cgrp, false);
+			}else{
+				DBG("group.send(ESC)");
+				lv_group_send_data(_cgrp, LV_KEY_ESC);
+			};
+			break;
+		};
+	};
+};
