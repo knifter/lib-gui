@@ -115,7 +115,7 @@ class ActionField : public MenuItem
 class FloatField : public MenuItem
 {
  	public:
- 		FloatField(MenuItem *parent, const char *text, float *f);
+ 		FloatField(MenuItem *parent, const char *text, float *f, float min = INFINITY, float max = -INFINITY);
 
 	public: // member vars
 		float *value;
@@ -150,7 +150,7 @@ class SubMenu : public MenuItem
 		// Construct children
 		MenuSeparator* 		addSeparator(const char* text);
 		SubMenu* 			addSubMenu(const char* text);
-		FloatField* 		addFloat(const char* name, float* f);
+		FloatField* 		addFloat(const char* name, float* f, float min = -INFINITY, float max = INFINITY);
 		ActionField*		addAction(const char* name, treemenu_cb_t func, void* data = nullptr);
 		BooleanField*		addSwitch(const char* name, bool* );
 		BooleanField*		addCheckbox(const char* name, bool* );

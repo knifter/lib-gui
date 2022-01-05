@@ -189,7 +189,8 @@ void ActionField::draw_btn(lv_obj_t *lv_list)
 };
 
 /*** FloatField ***************************************************************************************/
-FloatField::FloatField(MenuItem *parent, const char *text, float *f) : MenuItem(parent, text), value(f) 
+FloatField::FloatField(MenuItem *parent, const char *text, float *f, float min, float max) 
+	: MenuItem(parent, text), value(f), min_value(min), max_value(max) 
 { 
 	if(*value < min_value)
 		min_value = *value;
@@ -369,9 +370,9 @@ SubMenu* SubMenu::addSubMenu(const char* text)
 	return new SubMenu(this, text);
 };
 
-FloatField* SubMenu::addFloat(const char* name, float* f)
+FloatField* SubMenu::addFloat(const char* name, float* f, float min, float max)
 {
-	return new FloatField(this, name, f);
+	return new FloatField(this, name, f, min, max);
 };
 
 ActionField* SubMenu::addAction(const char* name, treemenu_cb_t *func, void *data)
