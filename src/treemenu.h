@@ -43,6 +43,7 @@ class MenuItem //: public NonCopyable
 		virtual void draw_btn(lv_obj_t *lv_list) = 0;
 		virtual void draw_open() {};
 		virtual void draw_close() {};
+		virtual bool handle(uint32_t key);
 		friend class SubMenu;
 		friend class TreeMenu;
 
@@ -124,17 +125,21 @@ class FloatField : public MenuItem
 		int decimals = 2;
 
 	protected:
+		bool handle(uint32_t key);
 		void draw_btn(lv_obj_t *lv_list);
 		void draw_open();
 		void draw_close();
+		void export_value();
 
 	private: // Callbacks
-		static void click_cb(lv_event_t *e);
+		static void btn_clicked_cb(lv_event_t *e);
+		// static void btn_key_cb(lv_event_t *e);
+		// static void sb_key_cb(lv_event_t *e);
 		static void btns_cb(lv_event_t * e);
 		int digits();
 	private:
 		//draw_btn
-		// lv_obj_t *_btn = nullptr;
+		lv_obj_t *_btn = nullptr;
 
 		//draw_open/close
 		lv_obj_t *_btns = nullptr;
@@ -173,7 +178,8 @@ class TreeMenu : public SubMenu
 		~TreeMenu();
 
 
-		enum menukey_t {
+		enum menukey_t : uint32_t 
+		{
 			KEY_NONE,
 			KEY_LEFT = LV_KEY_LEFT,
 			KEY_RIGHT = LV_KEY_RIGHT,

@@ -4,6 +4,7 @@
 
 #include <tools-log.h>
 
+#include <soogh-debug.h>
 /*
 Class hierarchy:
 	MenuItem 			(drawable: draw_item, draw_open)
@@ -84,6 +85,11 @@ void MenuItem::close_children()
 		};
 	};
 
+};
+
+bool MenuItem::handle(uint32_t key)
+{
+	return false;
 };
 
 void MenuItem::close()
@@ -201,20 +207,20 @@ FloatField::FloatField(MenuItem *parent, const char *text, float *f, float min, 
 void FloatField::draw_btn(lv_obj_t *lv_list)
 {
 	// TODO: can this be moved to MenuItem?
-	lv_obj_t *btn = lv_list_add_btn(lv_list, nullptr, _text);
-	lv_obj_add_event_cb(btn, click_cb, LV_EVENT_CLICKED, this);
-	lv_obj_set_flex_flow(btn, LV_FLEX_FLOW_ROW_WRAP);
-	lv_obj_set_style_pad_row(btn, 3, 0);
+	_btn = lv_list_add_btn(lv_list, nullptr, _text);
+	lv_obj_add_event_cb(_btn, btn_clicked_cb, LV_EVENT_CLICKED, this);
+	lv_obj_set_flex_flow(_btn, LV_FLEX_FLOW_ROW_WRAP);
+	lv_obj_set_style_pad_row(_btn, 3, 0);
 
-	_btn_lbl = lv_label_create(btn);
+	_btn_lbl = lv_label_create(_btn);
 	lv_label_set_text_fmt(_btn_lbl, "%.02f", *value);
 	// lv_obj_set_flex_grow(_btn_lbl, 1);
 	lv_obj_set_style_text_color(_btn_lbl, COLOR_GREY, 0);
 
-	root()->group_add(btn);
-};
+	root()->group_add(_btn);
+}; 
 
-/* static */ void FloatField::click_cb(lv_event_t *e) // static
+/* static */ void FloatField::btn_clicked_cb(lv_event_t *e)
 {
 	FloatField* me = static_cast<FloatField*>(e->user_data);
 	me->open();
@@ -222,23 +228,67 @@ void FloatField::draw_btn(lv_obj_t *lv_list)
 
 int FloatField::digits()
 {
-	int min_digits = ceil(log10(min_value));
+	int min_digits = ceil(log10(min_value)) + 1; // +minus sign
 	int max_digits = ceil(log10(max_value));
 	// DBG("mindig = %d, maxdig = %d", min_digits, max_digits);
 	return max(min_digits, max_digits) + decimals;
 };
 
+bool FloatField::handle(uint32_t key)
+{
+	DBG("key: %u", key);
+	static bool edit = true;
+	switch(key)
+	{
+		case LV_KEY_LEFT:
+			if(edit)
+				lv_spinbox_step_prev(_spinbox);
+			else
+				lv_spinbox_decrement(_spinbox);
+			break;
+		case LV_KEY_RIGHT:	
+			if(edit)
+				lv_spinbox_step_next(_spinbox); 
+			else
+				lv_spinbox_increment(_spinbox);
+			break;
+		case LV_KEY_ENTER:
+			if(edit)
+			{
+				edit = false;
+			}else{
+				edit = true;
+			};
+			DBG("Edit = %d", edit);
+			break;
+		case LV_KEY_ESC:
+			close();
+			break;
+	};
+	export_value();
+
+	return true;
+};
+
+void FloatField::export_value()
+{
+	if(!_spinbox)
+		return;
+	(*value) = lv_spinbox_get_value(_spinbox) / pow(10, decimals);
+	lv_label_set_text_fmt(_btn_lbl, "%.02f", *value);
+};
+
 void FloatField::draw_open()
 {
+	// modify btn
+	// lv_obj_set_style_bg_grad_color(_btn, COLOR_RED_LIGHT, 0);
+    lv_obj_add_state(_btn, LV_STATE_CHECKED);
+
+	lv_group_t* grp = root()->group_push();
+
 	// get coords of label
 	lv_area_t bpos;
 	lv_obj_get_coords(_btn_lbl, &bpos);
-
-    // // FIXME leaking
-	// lv_group_t* grp = lv_group_create();
-	// lv_group_add_obj(grp, _spinbox);
-	// lv_group_set_editing(grp, true);
-	// root()->set_group(grp);
 
 	// draw (floating) spinbox right over label
 	_spinbox = lv_spinbox_create(lv_layer_top());
@@ -257,7 +307,14 @@ void FloatField::draw_open()
     	// DBG("min/max = %f/%f, val = %f, digs = %d, dec = %d, mult = %f", min_value, max_value, *value, digits, decimals, pow(10, decimals));
 
 		_spinbox->user_data = this;
+	    // lv_spinbox_t * sb = (lv_spinbox_t *) _spinbox;
+		
+		lv_group_add_obj(grp, _spinbox);
+		// lv_obj_add_event_cb(_spinbox, sb_key_cb, LV_EVENT_KEY, this);
 	};
+
+	lv_group_focus_obj(_spinbox);
+	lv_group_set_editing(grp, true);
 
 #ifdef SOOGH_TOUCH
 	// And floating buttons just below the spinbox
@@ -287,12 +344,17 @@ void FloatField::draw_open()
 
 void FloatField::draw_close()
 {
-	lv_label_set_text_fmt(_btn_lbl, "%.02f", *value);
-
 	lv_obj_del(_spinbox); 	_spinbox=nullptr;
 #ifdef SOOGH_TOUCH
 	lv_obj_del(_btns);		_btns = nullptr;
 #endif
+
+	// modify btn
+	// lv_group_set_editing(root()->group_top(), false);
+    lv_obj_clear_state(_btn, LV_STATE_CHECKED);
+	// lv_obj_set_style_bg_color(_btn, COLOR_BLUE, 0);
+
+	root()->group_pop();
 };
 
 /* static */ void FloatField::btns_cb(lv_event_t * e)
@@ -310,7 +372,7 @@ void FloatField::draw_close()
 		case 4: lv_spinbox_step_next(me->_spinbox); break;
 		default: DBG("ID = %d", id); break;
 	};
-	*(me->value) = static_cast<float>(lv_spinbox_get_value(me->_spinbox)) / pow(10, (me->decimals));
+	me->export_value();
 };
 
 /*** SubMenu ***************************************************************************************/
@@ -512,8 +574,21 @@ void TreeMenu::sendKey(menukey_t key)
 		WARNING("No obj focussed");
 		return;
 	};
-	editable_or_scrollable = lv_obj_is_editable(obj) || lv_obj_has_flag(obj, LV_OBJ_FLAG_SCROLLABLE);
 
+	// See if the item owning the object wants to handle the event
+	if(obj->user_data)
+	{
+		DBG("Object has user-data.");
+		MenuItem* item = static_cast<MenuItem*>(obj->user_data);
+		if(item->handle(key))
+		{
+			DBG("key-event handled");
+			return;
+		};
+	};
+
+	// simulated indev mode
+	editable_or_scrollable = lv_obj_is_editable(obj) || lv_obj_has_flag(obj, LV_OBJ_FLAG_SCROLLABLE);
 	// DBG("edit_or_scrollable = %s, group.editing = %s", editable_or_scrollable ? "true": "false", lv_group_get_editing(grp) ? "true":"false");
 	switch(key)
 	{
@@ -547,11 +622,13 @@ void TreeMenu::sendKey(menukey_t key)
 			// PRESSED, RELEASE code from lv_indec.c(596).indev_encoder_proc()
 			if(!editable_or_scrollable)
 			{
-				// DBG("obj.send(PRESSED, RELEASED, SHORT_CLICKED, CLICKED)");
+				// DBG("!edit|scrollable: obj.send(PRESSED, RELEASED, SHORT_CLICKED, CLICKED)");
 				lv_event_send(obj, LV_EVENT_PRESSED, lvgl_indev_keyenc);
 				lv_event_send(obj, LV_EVENT_RELEASED, lvgl_indev_keyenc);
 				lv_event_send(obj, LV_EVENT_SHORT_CLICKED, lvgl_indev_keyenc);
 				lv_event_send(obj, LV_EVENT_CLICKED, lvgl_indev_keyenc);
+
+				// lv_group_send_data(grp, LV_KEY_ENTER); // FIXME: Wasnt here orig
 				break;
 			};
 			if(lv_group_get_editing(grp))
@@ -569,6 +646,7 @@ void TreeMenu::sendKey(menukey_t key)
 					// DBG("group.send(KEY_ENTER)");
 					lv_group_send_data(grp, LV_KEY_ENTER);
 				}else{
+					// DBG("grp.cnt < 2: clear_state(PRESSED)");
 					lv_obj_clear_state(obj, LV_STATE_PRESSED);
 				};
 				break;
@@ -579,15 +657,6 @@ void TreeMenu::sendKey(menukey_t key)
 
 		case KEY_ESC:
 		{
-			if(obj->user_data)
-			{
-				// DBG("obj has user-data");
-				MenuItem* item = static_cast<MenuItem*>(obj->user_data);
-				item->close();
-				lv_group_focus_prev(grp);
-				lv_group_set_editing(grp, false);
-				break;
-			};
 			if(lv_group_get_editing(grp))
 			{	
 				// DBG("group.set_edit(false)");
