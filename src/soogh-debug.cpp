@@ -1,33 +1,29 @@
 #include "soogh-debug.h"
 
-void debug_event_input(lv_event_t * e)
+void _debug_event_input(lv_event_t *e, const char *info)
 {
-	lv_event_code_t code = lv_event_get_code(e);
     // lv_obj_t * obj = lv_event_get_target(e);
-	const char* info = "";
-	if(e->user_data)
-		info = (const char*) e->user_data;
-
-	switch(code)
+	switch(e->code)
 	{
 	    /** Input device events*/
 		case LV_EVENT_PRESSED: DBG("%s: PRESSED", info); return;
-		// LV_EVENT_PRESSING
-		// LV_EVENT_PRESS_LOST
+		case LV_EVENT_PRESSING: DBG("%s: PRESSING", info); return;
+		case LV_EVENT_PRESS_LOST: DBG("%s: PRESS_LOST", info); return;
 		case LV_EVENT_SHORT_CLICKED: DBG("%s: SHORT_CLICKED", info); return;
 		case LV_EVENT_LONG_PRESSED: DBG("%s: LONG_PRESSED", info); return;
 		case LV_EVENT_LONG_PRESSED_REPEAT: DBG("%s: LONG_PRESSED_REPEAT", info); return;
 		case LV_EVENT_CLICKED: DBG("%s: CLICKED", info); return;
 		case LV_EVENT_RELEASED: DBG("%s: RELEASED", info); return;
-		// LV_EVENT_SCROLL_BEGIN
-		// LV_EVENT_SCROLL_END
-		// LV_EVENT_SCROLL
-		// LV_EVENT_GESTURE
+
+		case LV_EVENT_SCROLL_BEGIN: DBG("%s: SCROLL_BEGIN", info); return;
+		case LV_EVENT_SCROLL_END: DBG("%s: SCROLL_END", info); return;
+		case LV_EVENT_SCROLL: DBG("%s: SCROLL_SCROLL", info); return;
+		case LV_EVENT_GESTURE: DBG("%s: GESTURE", info); return;
 		case LV_EVENT_KEY: DBG("%s: KEY", info); return;
 		case LV_EVENT_FOCUSED: DBG("%s: FOCUSED", info); return;
-		// case LV_EVENT_DEFOCUSED: DBG("%s: DEFOCUSED", info); return;
+		case LV_EVENT_DEFOCUSED: DBG("%s: DEFOCUSED", info); return;
 		case LV_EVENT_LEAVE: DBG("%s: LEAVE", info); return;
-		// case LV_EVENT_HIT_TEST: DBG("%s: HIT_TEST", info); return;
+		//case LV_EVENT_HIT_TEST: DBG("%s: HIT_TEST", info); return;
 
 		// Special events
 		case LV_EVENT_VALUE_CHANGED: DBG("%s: VALUECHANGED", info); return;
@@ -42,6 +38,17 @@ void debug_event_input(lv_event_t * e)
 		default: return;
 	};
 };
+
+void debug_event_input_info(lv_event_t * e)
+{
+	_debug_event_input(e, (const char *) e->user_data);
+};
+
+void debug_event_input(lv_event_t *e)
+{
+	_debug_event_input(e, "");
+};
+
 
 void debug_event_drawing(lv_event_t * e)
 {
