@@ -188,17 +188,15 @@ class TreeMenu : public SubMenu
 		};
 
 		void sendKey(menukey_t key);
-		// void set_group(lv_group_t* group);
-		// lv_group_t* get_group();
 
+		// FIXME: make these protected
 		lv_group_t* group_push();
 		void group_pop();
 		lv_group_t* group_top();
 		void group_add(lv_obj_t* obj);
 
 	protected:
-		lv_group_t *_grp = nullptr;
-		// lv_group_t *_cgrp = nullptr;
+		// lv_group_t *_grp = nullptr;
 		GroupStack _grpstack;
 
 		void draw_open();
