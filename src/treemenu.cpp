@@ -359,6 +359,7 @@ void FloatField::draw_close()
 	root()->group_pop();
 };
 
+#ifdef SOOGH_TOUCH
 /* static */ void FloatField::btns_cb(lv_event_t * e)
 {
 	// lv_event_code_t code = lv_event_get_code(e);
@@ -376,6 +377,7 @@ void FloatField::draw_close()
 	};
 	me->export_value();
 };
+#endif // SOOGH_TOUCH
 
 /*** SubMenu ***************************************************************************************/
 void SubMenu::draw_open()
@@ -384,10 +386,19 @@ void SubMenu::draw_open()
 
     lv_img_set_src(_btn_img, LV_SYMBOL_DOWN);
 
+	lv_group_t* grp = root()->group_push();
+	lv_group_set_editing(grp, false);
+
 	// The mnu is a list
 	_list = lv_list_create(lv_parent);
 	lv_obj_set_style_border_width(_list, 0, 0);
 	lv_obj_set_height(_list, 45*_children.size());
+
+	// Draw first (back) button
+	lv_obj_t *btn = lv_list_add_btn(_list, LV_SYMBOL_LEFT, "Back");
+	lv_obj_add_event_cb(btn, SubMenu::close_cb, LV_EVENT_CLICKED, this);
+	root()->group_add(btn);
+	lv_list_add_text(_list, _text);
 
 	for(auto child: _children)
 		child->draw_btn(_list);
@@ -395,7 +406,9 @@ void SubMenu::draw_open()
 
 void SubMenu::draw_close()
 {
+	root()->group_pop();
 	lv_obj_del(_list); _list = nullptr;
+
 	lv_img_set_src(_btn_img, LV_SYMBOL_RIGHT);
 };
 
@@ -422,6 +435,12 @@ void SubMenu::draw_btn(lv_obj_t *lv_list)
 		me->close();
 	else
 		me->open();
+};
+
+/*static*/ void SubMenu::close_cb(lv_event_t *e)
+{
+	SubMenu* me = static_cast<SubMenu*>(e->user_data);
+	me->close();
 };
 
 MenuSeparator* SubMenu::addSeparator(const char* text)
@@ -500,11 +519,6 @@ void TreeMenu::draw_close()
 	group_pop();
 };
 
-/*static*/ void TreeMenu::close_cb(lv_event_t *e)
-{
-	TreeMenu* me = static_cast<TreeMenu*>(e->user_data);
-	me->close();
-};
 
 lv_group_t* TreeMenu::group_push()
 {

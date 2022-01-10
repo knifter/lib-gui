@@ -165,6 +165,7 @@ class SubMenu : public MenuItem
 		void draw_open();
 		void draw_close();
 		static void click_cb(lv_event_t *e);
+		static void close_cb(lv_event_t *e);
 
 		lv_obj_t *_list = nullptr;
 		lv_obj_t *_btn = nullptr;
@@ -192,7 +193,6 @@ class TreeMenu : public SubMenu
 		void draw_open();
 		void draw_close();
 		void draw_btn() {};
-		static void close_cb(lv_event_t *e);
 
 };
 
