@@ -467,9 +467,6 @@ TreeMenu::~TreeMenu()
 		lv_group_del(_grpstack.top());
 		_grpstack.pop();
 	};
-	// Workaround: #2963
-	// make indev forget its group, must be one of mine, which I'm sure is deleted now
-	lv_indev_set_group(lvgl_indev_keyenc,  nullptr);
 };
 
 void TreeMenu::draw_open()
@@ -526,14 +523,8 @@ void TreeMenu::group_pop()
 	lv_group_del(_grpstack.top());
 	_grpstack.pop();
 
-	// Workaround: #2963
-	if(_grpstack.empty())
-	{
-		// make indev forget its group, must be one of mine, which I'm sure is deleted now
-		lv_indev_set_group(lvgl_indev_keyenc,  nullptr);
-	}else{
+	if(!_grpstack.empty())
 		lv_indev_set_group(lvgl_indev_keyenc,  _grpstack.top());
-	};
 };
 
 lv_group_t* TreeMenu::group_top()
@@ -582,7 +573,7 @@ void TreeMenu::sendKey(menukey_t key)
 		MenuItem* item = static_cast<MenuItem*>(obj->user_data);
 		if(item->handle(key))
 		{
-			DBG("key-event handled");
+			DBG("key-event handled by item");
 			return;
 		};
 	};
