@@ -31,9 +31,20 @@ void lgfx_init()
     _lgfx.setColorDepth(24);
 };
 
+#if LV_USE_LOG
+void serial_log_cb(const char* line)
+{
+    Serial.print(line);
+};
+#endif
+
 void lvgl_init()
 {
     lv_init();
+
+#if LV_USE_LOG
+    lv_log_register_print_cb(serial_log_cb);
+#endif
 
 #ifdef SOOGH_DOUBLEBUF
     lv_disp_draw_buf_init(&_lv_draw_buf, _lv_color_buf1, _lv_color_buf2, LV_BUF_SIZE);
