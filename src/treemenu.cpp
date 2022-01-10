@@ -199,9 +199,9 @@ FloatField::FloatField(MenuItem *parent, const char *text, float *f, float min, 
 	: MenuItem(parent, text), value(f), min_value(min), max_value(max) 
 { 
 	if(*value < min_value)
-		min_value = *value;
+		*value = min_value;
 	if(*value > max_value)
-		max_value = *value;
+		*value = max_value;
 };
 
 void FloatField::draw_btn(lv_obj_t *lv_list)
