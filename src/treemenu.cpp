@@ -238,30 +238,33 @@ int FloatField::digits()
 
 bool FloatField::sendKey(lv_key_t key)
 {
-	DBG("key: %u", key);
-	static bool edit = true;
+	static time_t last_enter = 0;
+	time_t now = millis();
 	switch(key)
 	{
 		case LV_KEY_LEFT:
-			if(edit)
-				lv_spinbox_step_prev(_spinbox);
-			else
+			if(_edit)
 				lv_spinbox_decrement(_spinbox);
+			else
+				lv_spinbox_step_prev(_spinbox);
 			break;
 		case LV_KEY_RIGHT:	
-			if(edit)
-				lv_spinbox_step_next(_spinbox); 
-			else
+			if(_edit)
 				lv_spinbox_increment(_spinbox);
+			else
+				lv_spinbox_step_next(_spinbox); 
 			break;
 		case LV_KEY_ENTER:
-			if(edit)
+			// detect double click to close
+			if((now - last_enter) < 500)
 			{
-				edit = false;
-			}else{
-				edit = true;
+				close();
+				return true;
 			};
-			DBG("Edit = %d", edit);
+			last_enter = now;
+
+			_edit = !_edit;
+			lv_obj_set_style_bg_color(_spinbox, _edit ? COLOR_RED : COLOR_BLUE, LV_PART_CURSOR);
 			break;
 		case LV_KEY_ESC:
 			close();
@@ -292,27 +295,34 @@ void FloatField::draw_open()
 	lv_area_t bpos;
 	lv_obj_get_coords(_btn_lbl, &bpos);
 
+
 	// draw (floating) spinbox right over label
 	_spinbox = lv_spinbox_create(lv_layer_top());
 	{
 		const int w = bpos.x2 - bpos.x1;
 		const int h = bpos.y2 - bpos.y1;
-		lv_obj_set_pos(_spinbox, bpos.x1 - 10, bpos.y1 - 10);
-		lv_obj_set_size(_spinbox, w + 20, h + 20);
-
+		lv_obj_set_pos(_spinbox, bpos.x1 - 12, bpos.y1 - 12);
+		lv_obj_set_size(_spinbox, w + 24, h + 24);
 
 		int digits = this->digits();
         int factor = pow(10, decimals);
+
+		// Start editing at the integer digit if not yet openend
+		_edit = true;
+		if(_lastpos == 0xFF)
+			_lastpos = digits - decimals;
+
 		lv_spinbox_set_range(_spinbox, min_value*factor, max_value*factor);
 		lv_spinbox_set_digit_format(_spinbox, digits, digits - decimals);
 		lv_spinbox_set_value(_spinbox, (*value) * factor);
+		lv_spinbox_set_pos(_spinbox, _lastpos);
+		lv_obj_set_style_bg_color(_spinbox, _edit ? COLOR_RED : COLOR_BLUE, LV_PART_CURSOR);
+
     	// DBG("min/max = %f/%f, val = %f, digs = %d, dec = %d, mult = %f", min_value, max_value, *value, digits, decimals, pow(10, decimals));
 
 		_spinbox->user_data = this;
-	    // lv_spinbox_t * sb = (lv_spinbox_t *) _spinbox;
 		
 		lv_group_add_obj(grp, _spinbox);
-		// lv_obj_add_event_cb(_spinbox, sb_key_cb, LV_EVENT_KEY, this);
 	};
 
 	lv_group_focus_obj(_spinbox);
@@ -346,6 +356,8 @@ void FloatField::draw_open()
 
 void FloatField::draw_close()
 {
+	_lastpos = log10( lv_spinbox_get_step(_spinbox) );
+
 	lv_obj_del(_spinbox); 	_spinbox=nullptr;
 #ifdef SOOGH_TOUCH
 	lv_obj_del(_btns);		_btns = nullptr;

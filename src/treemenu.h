@@ -132,19 +132,22 @@ class FloatField : public MenuItem
 		void export_value();
 
 	private: // Callbacks
-		static void btn_clicked_cb(lv_event_t *e);
-		// static void btn_key_cb(lv_event_t *e);
-		// static void sb_key_cb(lv_event_t *e);
-		static void btns_cb(lv_event_t * e);
 		int digits();
-	private:
+
 		//draw_btn
 		lv_obj_t *_btn = nullptr;
+		static void btn_clicked_cb(lv_event_t *e);
 
 		//draw_open/close
+#ifdef SOOGH_TOUCH
 		lv_obj_t *_btns = nullptr;
+		static void btns_cb(lv_event_t * e);
+#endif
 		lv_obj_t *_spinbox = nullptr;
+		static void spinbox_draw_cb(lv_event_t* e);
 		lv_obj_t *_btn_lbl = nullptr;
+		bool _edit;
+		uint8_t _lastpos = 0xFF;
 };
 
 class SubMenu : public MenuItem
