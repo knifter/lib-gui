@@ -87,8 +87,10 @@ void MenuItem::close_children()
 
 };
 
-bool MenuItem::handle(uint32_t key)
-{
+bool MenuItem::sendKey(lv_key_t key)
+{	
+	if(_parent)
+		return root()->sendKey(key);
 	return false;
 };
 
@@ -234,7 +236,7 @@ int FloatField::digits()
 	return max(min_digits, max_digits) + decimals;
 };
 
-bool FloatField::handle(uint32_t key)
+bool FloatField::sendKey(lv_key_t key)
 {
 	DBG("key: %u", key);
 	static bool edit = true;
@@ -549,12 +551,12 @@ void TreeMenu::group_add(lv_obj_t* obj)
 	lv_group_add_obj(_grpstack.top(), obj);
 };
 
-void TreeMenu::sendKey(menukey_t key)
+bool TreeMenu::sendKey(lv_key_t key)
 {
 	if(_grpstack.empty())
 	{
 		WARNING("No group to send key to.");
-		return;
+		return false;
 	};
 	lv_group_t* grp = _grpstack.top();
 
@@ -563,7 +565,7 @@ void TreeMenu::sendKey(menukey_t key)
 	if(!obj)
 	{
 		WARNING("No obj focussed");
-		return;
+		return false;
 	};
 
 	// See if the item owning the object wants to handle the event
@@ -571,10 +573,10 @@ void TreeMenu::sendKey(menukey_t key)
 	{
 		DBG("Object has user-data.");
 		MenuItem* item = static_cast<MenuItem*>(obj->user_data);
-		if(item->handle(key))
+		if(item->sendKey(key))
 		{
 			DBG("key-event handled by item");
-			return;
+			return true;
 		};
 	};
 
@@ -583,11 +585,7 @@ void TreeMenu::sendKey(menukey_t key)
 	// DBG("edit_or_scrollable = %s, group.editing = %s", editable_or_scrollable ? "true": "false", lv_group_get_editing(grp) ? "true":"false");
 	switch(key)
 	{
-		case KEY_NONE:
-			DBG("No key given.");
-			break;
-
-		case KEY_LEFT:
+		case LV_KEY_LEFT:
 			if(lv_group_get_editing(grp))
 			{
 				// DBG("group.send(LEFT)");
@@ -598,7 +596,7 @@ void TreeMenu::sendKey(menukey_t key)
 			};
 			break;
 
-		case KEY_RIGHT:
+		case LV_KEY_RIGHT:
 			if(lv_group_get_editing(grp))
 			{
 				// DBG("group.send(RIGHT)");
@@ -609,7 +607,7 @@ void TreeMenu::sendKey(menukey_t key)
 			};
 			break;
 
-		case KEY_ENTER:
+		case LV_KEY_ENTER:
 			// PRESSED, RELEASE code from lv_indec.c(596).indev_encoder_proc()
 			if(!editable_or_scrollable)
 			{
@@ -646,8 +644,7 @@ void TreeMenu::sendKey(menukey_t key)
 			lv_group_set_editing(grp, true);
 			break;
 
-		case KEY_ESC:
-		{
+		case LV_KEY_ESC:
 			if(lv_group_get_editing(grp))
 			{	
 				// DBG("group.set_edit(false)");
@@ -657,6 +654,9 @@ void TreeMenu::sendKey(menukey_t key)
 				lv_group_send_data(grp, LV_KEY_ESC);
 			};
 			break;
-		};
+		default:
+			WARNING("Unknown key %d sent to TreeMenu", key);
+			return false;
 	};
+	return true;
 };
