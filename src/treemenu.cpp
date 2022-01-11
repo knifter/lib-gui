@@ -3,8 +3,9 @@
 #include <soogh.h>
 
 #include <tools-log.h>
-
 #include <soogh-debug.h>
+#include <math.h>
+
 /*
 Class hierarchy:
 	MenuItem 			(drawable: draw_item, draw_open)
@@ -199,11 +200,7 @@ void ActionField::draw_btn(lv_obj_t *lv_list)
 /*** FloatField ***************************************************************************************/
 FloatField::FloatField(MenuItem *parent, const char *text, float *f, float min, float max) 
 	: MenuItem(parent, text), value(f), min_value(min), max_value(max) 
-{ 
-	if(*value < min_value)
-		*value = min_value;
-	if(*value > max_value)
-		*value = max_value;
+{
 };
 
 void FloatField::draw_btn(lv_obj_t *lv_list)
@@ -215,7 +212,7 @@ void FloatField::draw_btn(lv_obj_t *lv_list)
 	lv_obj_set_style_pad_row(_btn, 3, 0);
 
 	_btn_lbl = lv_label_create(_btn);
-	lv_label_set_text_fmt(_btn_lbl, "%.02f", *value);
+	lv_label_set_text_fmt(_btn_lbl, "%.*f", decimals, *value);
 	// lv_obj_set_flex_grow(_btn_lbl, 1);
 	lv_obj_set_style_text_color(_btn_lbl, COLOR_GREY, 0);
 
@@ -226,14 +223,6 @@ void FloatField::draw_btn(lv_obj_t *lv_list)
 {
 	FloatField* me = static_cast<FloatField*>(e->user_data);
 	me->open();
-};
-
-int FloatField::digits()
-{
-	int min_digits = ceil(log10(min_value)) + 1; // +minus sign
-	int max_digits = ceil(log10(max_value));
-	// DBG("mindig = %d, maxdig = %d", min_digits, max_digits);
-	return max(min_digits, max_digits) + decimals;
 };
 
 bool FloatField::sendKey(lv_key_t key)
@@ -280,7 +269,16 @@ void FloatField::export_value()
 	if(!_spinbox)
 		return;
 	(*value) = lv_spinbox_get_value(_spinbox) / pow(10, decimals);
-	lv_label_set_text_fmt(_btn_lbl, "%.02f", *value);
+	lv_label_set_text_fmt(_btn_lbl, "%.*f", decimals, *value);
+};
+
+int FloatField::digits()
+{
+	// DBG("min/max: %f/%f", _min, _max);
+	int min_digits = (min_value != 0) ? ceil(log10(abs(min_value)+1)) : 1;
+	int max_digits = (max_value != 0) ? ceil(log10(abs(max_value)+1)) : 1;
+	// DBG("mindig = %d, maxdig = %d", min_digits, max_digits);
+	return max(min_digits, max_digits) + decimals;
 };
 
 void FloatField::draw_open()
@@ -310,7 +308,7 @@ void FloatField::draw_open()
 		// Start editing at the integer digit if not yet openend
 		_edit = true;
 		if(_lastpos == 0xFF)
-			_lastpos = digits - decimals;
+			_lastpos = decimals;
 
 		lv_spinbox_set_range(_spinbox, min_value*factor, max_value*factor);
 		lv_spinbox_set_digit_format(_spinbox, digits, digits - decimals);
@@ -318,7 +316,7 @@ void FloatField::draw_open()
 		lv_spinbox_set_pos(_spinbox, _lastpos);
 		lv_obj_set_style_bg_color(_spinbox, _edit ? COLOR_RED : COLOR_BLUE, LV_PART_CURSOR);
 
-    	// DBG("min/max = %f/%f, val = %f, digs = %d, dec = %d, mult = %f", min_value, max_value, *value, digits, decimals, pow(10, decimals));
+    	// DBG("min/max = %f/%f, val = %f, digs = %d, dec = %d, mult = %f", _min, _max, *value, digits, _decimals, pow(10, _decimals));
 
 		_spinbox->user_data = this;
 		
@@ -356,6 +354,7 @@ void FloatField::draw_open()
 
 void FloatField::draw_close()
 {
+	// store cursor position
 	_lastpos = log10( lv_spinbox_get_step(_spinbox) );
 
 	lv_obj_del(_spinbox); 	_spinbox=nullptr;
@@ -364,9 +363,7 @@ void FloatField::draw_close()
 #endif
 
 	// modify btn
-	// lv_group_set_editing(root()->group_top(), false);
     lv_obj_clear_state(_btn, LV_STATE_CHECKED);
-	// lv_obj_set_style_bg_color(_btn, COLOR_BLUE, 0);
 
 	root()->group_pop();
 };
@@ -465,9 +462,11 @@ SubMenu* SubMenu::addSubMenu(const char* text)
 	return new SubMenu(this, text);
 };
 
-FloatField* SubMenu::addFloat(const char* name, float* f, float min, float max)
+FloatField* SubMenu::addFloat(const char* name, float* f, float min, float max, uint decimals)
 {
-	return new FloatField(this, name, f, min, max);
+	auto item = new FloatField(this, name, f, min, max);
+	item->decimals = decimals;
+	return item;
 };
 
 ActionField* SubMenu::addAction(const char* name, treemenu_cb_t *func, void *data)
@@ -484,6 +483,8 @@ BooleanField* SubMenu::addCheckbox(const char* name, bool *b)
 {
 	return new BooleanField(this, name, b, BooleanField::BOOLTYPE_CHECKBOX);
 };
+
+
 
 
 /*** Root ***************************************************************************************/
@@ -597,11 +598,9 @@ bool TreeMenu::sendKey(lv_key_t key)
 	// See if the item owning the object wants to handle the event
 	if(obj->user_data)
 	{
-		DBG("Object has user-data.");
 		MenuItem* item = static_cast<MenuItem*>(obj->user_data);
 		if(item->sendKey(key))
 		{
-			DBG("key-event handled by item");
 			return true;
 		};
 	};

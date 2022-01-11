@@ -116,14 +116,14 @@ class ActionField : public MenuItem
 class FloatField : public MenuItem
 {
  	public:
- 		FloatField(MenuItem *parent, const char *text, float *f, float min = INFINITY, float max = -INFINITY);
+		FloatField(MenuItem *parent, const char *text, float *f, float min = -10, float max = 10);
 
 	public: // member vars
 		float *value;
-		float min_value = 0;
-		float max_value = 10;
+		float min_value = -10.0;
+		float max_value = 10.0;
 		int decimals = 2;
-
+		
 	protected:
 		bool sendKey(lv_key_t key);
 		void draw_btn(lv_obj_t *lv_list);
@@ -158,7 +158,7 @@ class SubMenu : public MenuItem
 		// Construct children
 		MenuSeparator* 		addSeparator(const char* text);
 		SubMenu* 			addSubMenu(const char* text);
-		FloatField* 		addFloat(const char* name, float* f, float min = -INFINITY, float max = INFINITY);
+		FloatField* 		addFloat(const char* name, float* f, float min = -10, float max = 10, uint decimals = 2);
 		ActionField*		addAction(const char* name, treemenu_cb_t func, void* data = nullptr);
 		BooleanField*		addSwitch(const char* name, bool* );
 		BooleanField*		addCheckbox(const char* name, bool* );
