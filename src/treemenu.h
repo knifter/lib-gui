@@ -113,15 +113,15 @@ class ActionField : public MenuItem
 		static void click_cb(lv_event_t *e);
 };
 
-class FloatField : public MenuItem
+class NumberField : public MenuItem
 {
  	public:
-		FloatField(MenuItem *parent, const char *text, float *f, float min = -10, float max = 10);
+		NumberField(MenuItem *parent, const char *text, double *f, double min = -10, double max = 10);
 
 	public: // member vars
-		float *value;
-		float min_value = -10.0;
-		float max_value = 10.0;
+		double *value;
+		double min_value = -10.0;
+		double max_value = 10.0;
 		int decimals = 2;
 		
 	protected:
@@ -158,7 +158,7 @@ class SubMenu : public MenuItem
 		// Construct children
 		MenuSeparator* 		addSeparator(const char* text);
 		SubMenu* 			addSubMenu(const char* text);
-		FloatField* 		addFloat(const char* name, float* f, float min = -10, float max = 10, uint decimals = 2);
+		NumberField* 		addSpinbox(const char* name, double* f, double min = -10, double max = 10, uint decimals = 2);
 		ActionField*		addAction(const char* name, treemenu_cb_t func, void* data = nullptr);
 		BooleanField*		addSwitch(const char* name, bool* );
 		BooleanField*		addCheckbox(const char* name, bool* );

@@ -11,7 +11,7 @@ Class hierarchy:
 	MenuItem 			(drawable: draw_item, draw_open)
 		SubMenu 		(actual menu)
 			TreeMenu	(Top most Menu)
-		FloatField 		(float editor)
+		NumberField 	(number editor)
 		SwitchField 	(on/off boolean)
 		ListField 		(picklist)
 */
@@ -197,13 +197,13 @@ void ActionField::draw_btn(lv_obj_t *lv_list)
 		me->_change_cb(me, me->_change_data);
 };
 
-/*** FloatField ***************************************************************************************/
-FloatField::FloatField(MenuItem *parent, const char *text, float *f, float min, float max) 
+/*** NumberField ***************************************************************************************/
+NumberField::NumberField(MenuItem *parent, const char *text, double *f, double min, double max) 
 	: MenuItem(parent, text), value(f), min_value(min), max_value(max) 
 {
 };
 
-void FloatField::draw_btn(lv_obj_t *lv_list)
+void NumberField::draw_btn(lv_obj_t *lv_list)
 {
 	// TODO: can this be moved to MenuItem?
 	_btn = lv_list_add_btn(lv_list, nullptr, _text);
@@ -219,13 +219,13 @@ void FloatField::draw_btn(lv_obj_t *lv_list)
 	root()->group_add(_btn);
 }; 
 
-/* static */ void FloatField::btn_clicked_cb(lv_event_t *e)
+/* static */ void NumberField::btn_clicked_cb(lv_event_t *e)
 {
-	FloatField* me = static_cast<FloatField*>(e->user_data);
+	NumberField* me = static_cast<NumberField*>(e->user_data);
 	me->open();
 };
 
-bool FloatField::sendKey(lv_key_t key)
+bool NumberField::sendKey(lv_key_t key)
 {
 	static time_t last_enter = 0;
 	time_t now = millis();
@@ -264,7 +264,7 @@ bool FloatField::sendKey(lv_key_t key)
 	return true;
 };
 
-void FloatField::export_value()
+void NumberField::export_value()
 {
 	if(!_spinbox)
 		return;
@@ -272,7 +272,7 @@ void FloatField::export_value()
 	lv_label_set_text_fmt(_btn_lbl, "%.*f", decimals, *value);
 };
 
-int FloatField::digits()
+int NumberField::digits()
 {
 	// DBG("min/max: %f/%f", _min, _max);
 	int min_digits = (min_value != 0) ? ceil(log10(abs(min_value)+1)) : 1;
@@ -281,7 +281,7 @@ int FloatField::digits()
 	return max(min_digits, max_digits) + decimals;
 };
 
-void FloatField::draw_open()
+void NumberField::draw_open()
 {
 	// modify btn
 	// lv_obj_set_style_bg_grad_color(_btn, COLOR_RED_LIGHT, 0);
@@ -352,7 +352,7 @@ void FloatField::draw_open()
 #endif // SOOGH_TOUCH
 };
 
-void FloatField::draw_close()
+void NumberField::draw_close()
 {
 	// store cursor position
 	_lastpos = log10( lv_spinbox_get_step(_spinbox) );
@@ -369,12 +369,12 @@ void FloatField::draw_close()
 };
 
 #ifdef SOOGH_TOUCH
-/* static */ void FloatField::btns_cb(lv_event_t * e)
+/* static */ void NumberField::btns_cb(lv_event_t * e)
 {
 	// lv_event_code_t code = lv_event_get_code(e);
 	lv_obj_t * obj = lv_event_get_target(e);
 	uint32_t id = lv_btnmatrix_get_selected_btn(obj);
-	FloatField* me = static_cast<FloatField*>(e->user_data);
+	NumberField* me = static_cast<NumberField*>(e->user_data);
 	switch(id)
 	{
 		case 0: lv_spinbox_step_prev(me->_spinbox); break;
@@ -462,9 +462,9 @@ SubMenu* SubMenu::addSubMenu(const char* text)
 	return new SubMenu(this, text);
 };
 
-FloatField* SubMenu::addFloat(const char* name, float* f, float min, float max, uint decimals)
+NumberField* SubMenu::addSpinbox(const char* name, double* f, double min, double max, uint decimals)
 {
-	auto item = new FloatField(this, name, f, min, max);
+	auto item = new NumberField(this, name, f, min, max);
 	item->decimals = decimals;
 	return item;
 };
@@ -483,8 +483,6 @@ BooleanField* SubMenu::addCheckbox(const char* name, bool *b)
 {
 	return new BooleanField(this, name, b, BooleanField::BOOLTYPE_CHECKBOX);
 };
-
-
 
 
 /*** Root ***************************************************************************************/
