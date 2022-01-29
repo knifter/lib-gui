@@ -28,10 +28,17 @@
 #define COLOR_GREY			lv_palette_main(LV_PALETTE_GREY)
 
 #define COLOR_GREEN_DARK2	lv_palette_darken(LV_PALETTE_GREEN, 2)
-#define COLOR_GREY_DARK3	lv_palette_darken(LV_PALETTE_GREY, 3)
-#define COLOR_RED_LIGHT2	lv_palette_lighten(LV_PALETTE_RED, 2)
 #define COLOR_GREEN_LIGHT2	lv_palette_lighten(LV_PALETTE_GREEN, 2)
-#define COLOR_GREY_LIGHT4	lv_palette_lighten(LV_PALETTE_GREY, 4)
+#define COLOR_RED_LIGHT2	lv_palette_lighten(LV_PALETTE_RED, 2)
 #define COLOR_PURPLE_LIGHT3	lv_palette_lighten(LV_PALETTE_PURPLE, 3)
+
+#define COLOR_GREY_DARK1	lv_palette_darken(LV_PALETTE_GREY, 1)
+#define COLOR_GREY_DARK2	lv_palette_darken(LV_PALETTE_GREY, 2)
+#define COLOR_GREY_DARK3	lv_palette_darken(LV_PALETTE_GREY, 3)
+#define COLOR_GREY_DARK4	lv_palette_darken(LV_PALETTE_GREY, 4)
+#define COLOR_GREY_LIGHT1	lv_palette_lighten(LV_PALETTE_GREY, 1)
+#define COLOR_GREY_LIGHT2	lv_palette_lighten(LV_PALETTE_GREY, 2)
+#define COLOR_GREY_LIGHT3	lv_palette_lighten(LV_PALETTE_GREY, 3)
+#define COLOR_GREY_LIGHT4	lv_palette_lighten(LV_PALETTE_GREY, 4)
 
 #endif // __SOOGH_COLOR_H
