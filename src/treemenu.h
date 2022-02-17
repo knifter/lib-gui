@@ -36,7 +36,7 @@ class MenuItem //: public NonCopyable
 		void open();
 		bool isOpen();
 		void onClose(treemenu_cb_t *func, void* user_data = nullptr);
-		// void onChange(treemenu_cb_t func, void* user_data = nullptr);
+		void onChange(treemenu_cb_t func, void* user_data = nullptr);
 
 	protected:
 		virtual void close_children();
@@ -50,12 +50,14 @@ class MenuItem //: public NonCopyable
 		MenuItem* parent();
 		TreeMenu* root();
 		void appendChild(MenuItem* child);
+		void call_onclose();
+		void call_onchange();
 
 	protected:
 		MenuItem *_parent = nullptr;
 		MenuItemArray _children;
 
-		const char* _text;
+		const char* _name;
 		bool _open = false;
 		// lv_obj_t *_obj = nullptr;
 
@@ -150,6 +152,43 @@ class NumberField : public MenuItem
 		uint8_t _lastpos = 0xFF;
 };
 
+class SelectorField : public MenuItem
+{
+	public:
+		// enum : uint8_t
+		// {
+		// 	FLAG_DISABLED = 0x01,
+		// 	FLAG_HIDDEN = 0x02,			
+		// };
+		typedef struct 
+		{
+			uint32_t id;
+			const char* shortname;
+			const char* longname;
+			// uint8_t flags;
+		} item_t;
+		
+		SelectorField(MenuItem *parent, const char *text, uint32_t* target, const item_t *items);
+
+	protected:
+		// bool sendKey(lv_key_t key);
+		void draw_btn(lv_obj_t *lv_list);
+		void draw_open();
+		void draw_close();
+		bool sendKey(lv_key_t key);
+
+	private:
+		uint32_t *_target;
+		const item_t* _items;
+
+		static void btn_click_cb(lv_event_t *e);
+		static void choose_click_cb(lv_event_t *e);
+
+		lv_obj_t *_btn = nullptr;
+		lv_obj_t *_btn_lbl = nullptr;
+		lv_obj_t *_list = nullptr;
+};
+
 class SubMenu : public MenuItem
 {
 	public:
@@ -162,6 +201,7 @@ class SubMenu : public MenuItem
 		ActionField*		addAction(const char* name, treemenu_cb_t func, void* data = nullptr);
 		BooleanField*		addSwitch(const char* name, bool* );
 		BooleanField*		addCheckbox(const char* name, bool* );
+		SelectorField*		addSelector(const char* name, uint32_t* seltarget, SelectorField::item_t *items);
 
 	protected:
 		void draw_btn(lv_obj_t *lv_list);

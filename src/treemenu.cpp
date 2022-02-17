@@ -17,9 +17,9 @@ Class hierarchy:
 */
 
 /*** MenuItem ***************************************************************************************/
-MenuItem::MenuItem(MenuItem *parent, const char *text) : _parent(parent), _text(text)
+MenuItem::MenuItem(MenuItem *parent, const char *name) : _parent(parent), _name(name)
 {
-	// DBG("CONSTRUCT(%s) = %p", _text, this);
+	// DBG("CONSTRUCT(%s) = %p", _name, this);
 	if(_parent)
 		_parent->appendChild(this);
 };
@@ -34,7 +34,7 @@ MenuItem::~MenuItem()
 	{
 		WARNING("Destroying open object.");
 	};
-	// DBG("DESTROY(%s) = %p", _text, this);
+	// DBG("DESTROY(%s) = %p", _name, this);
 };
 
 MenuItem* MenuItem::parent()
@@ -64,7 +64,7 @@ void MenuItem::open()
 {
 	if(_open)
 		return;
-	// DBG("open(%s)", _text);
+	// DBG("open(%s)", _name);
 	// close other opened siblings
 	if(_parent)
 		_parent->close_children();
@@ -75,13 +75,13 @@ void MenuItem::open()
 
 void MenuItem::close_children()
 {
-	// DBG("close_children(of %s)", _text);
+	// DBG("close_children(of %s)", _name);
 	// propagate close through all children as well
 	for(auto child: _children)
 	{
 		if(child->isOpen())
 		{
-			// DBG("%s: close child: %s", this->_text, child->_text);
+			// DBG("%s: close child: %s", this->_name, child->_name);
 			child->close();
 		};
 	};
@@ -100,7 +100,7 @@ void MenuItem::close()
 	if(!_open)
 		return;
 
-	// DBG("close(%s)", _text);
+	// DBG("close(%s)", _name);
 
 	// make sure children are closed
 	close_children();
@@ -108,8 +108,7 @@ void MenuItem::close()
 	draw_close();
 	
 	// Call on-close event callback
-	if(_close_cb)
-		_close_cb(this, _close_data);
+	call_onclose();
 
 	// and then me
 	_open = false;
@@ -125,17 +124,33 @@ void MenuItem::onClose(treemenu_cb_t *func, void* user_data)
 	_close_cb = func;
 	_close_data = user_data; 
 };
+inline void MenuItem::call_onclose()
+{
+	if(_close_cb)
+		_close_cb(this, _close_data);
+};
+
+void MenuItem::onChange(treemenu_cb_t *func, void* user_data) 
+{ 
+	_change_cb = func;
+	_change_data = user_data; 
+};
+inline void MenuItem::call_onchange()
+{
+	if(_change_cb)
+		_change_cb(this, _change_data);
+};
 
 /*** Separator ***************************************************************************************/
 void MenuSeparator::draw_btn(lv_obj_t *lv_list)
 {
-	lv_list_add_text(lv_list, _text);
+	lv_list_add_text(lv_list, _name);
 };
 
 /*** BooleanField ***************************************************************************************/
 void BooleanField::draw_btn(lv_obj_t *lv_list)
 {
-	lv_obj_t *btn = lv_list_add_btn(lv_list, nullptr, _text);
+	lv_obj_t *btn = lv_list_add_btn(lv_list, nullptr, _name);
 	lv_obj_set_flex_flow(btn, LV_FLEX_FLOW_ROW_WRAP);
 	lv_obj_set_style_pad_row(btn, 3, 0);
 
@@ -176,7 +191,7 @@ void BooleanField::draw_btn(lv_obj_t *lv_list)
 };
 
 /*** ActionItem ***************************************************************************************/
-ActionField::ActionField(MenuItem *parent, const char *text, treemenu_cb_t *func, void* data) : MenuItem(parent, text)
+ActionField::ActionField(MenuItem *parent, const char *name, treemenu_cb_t *func, void* data) : MenuItem(parent, name)
 {
 	_change_cb = func; 
 	_change_data = data;
@@ -184,7 +199,7 @@ ActionField::ActionField(MenuItem *parent, const char *text, treemenu_cb_t *func
 
 void ActionField::draw_btn(lv_obj_t *lv_list)
 {
-	lv_obj_t *btn = lv_list_add_btn(lv_list, nullptr, _text);
+	lv_obj_t *btn = lv_list_add_btn(lv_list, nullptr, _name);
 	lv_obj_add_event_cb(btn, click_cb, LV_EVENT_CLICKED, this);
 
 	root()->group_add(btn);
@@ -198,15 +213,15 @@ void ActionField::draw_btn(lv_obj_t *lv_list)
 };
 
 /*** NumberField ***************************************************************************************/
-NumberField::NumberField(MenuItem *parent, const char *text, double *f, double min, double max) 
-	: MenuItem(parent, text), value(f), min_value(min), max_value(max) 
+NumberField::NumberField(MenuItem *parent, const char *name, double *f, double min, double max) 
+	: MenuItem(parent, name), value(f), min_value(min), max_value(max) 
 {
 };
 
 void NumberField::draw_btn(lv_obj_t *lv_list)
 {
 	// TODO: can this be moved to MenuItem?
-	_btn = lv_list_add_btn(lv_list, nullptr, _text);
+	_btn = lv_list_add_btn(lv_list, nullptr, _name);
 	lv_obj_add_event_cb(_btn, btn_clicked_cb, LV_EVENT_CLICKED, this);
 	lv_obj_set_flex_flow(_btn, LV_FLEX_FLOW_ROW_WRAP);
 	lv_obj_set_style_pad_row(_btn, 3, 0);
@@ -388,6 +403,136 @@ void NumberField::draw_close()
 };
 #endif // SOOGH_TOUCH
 
+/*** SelectorField *********************************************************************************/
+// SelectorField::SelectorField(MenuItem *parent, const char *name, uint32_t* target, selectionlist_t list)
+SelectorField::SelectorField(MenuItem *parent, const char *name, uint32_t* target, const item_t *items)
+	: MenuItem(parent, name), _target(target), _items(items)
+{
+};
+
+void SelectorField::draw_btn(lv_obj_t *lv_list)
+{
+	// TODO: can this be moved to MenuItem?
+	_btn = lv_list_add_btn(lv_list, nullptr, _name);
+	lv_obj_add_event_cb(_btn, btn_click_cb, LV_EVENT_CLICKED, this);
+	lv_obj_set_flex_flow(_btn, LV_FLEX_FLOW_ROW_WRAP);
+	lv_obj_set_style_pad_row(_btn, 3, 0);
+
+	_btn_lbl = lv_label_create(_btn);
+	lv_label_set_text_fmt(_btn_lbl, "lbl");
+	lv_obj_set_style_text_color(_btn_lbl, COLOR_GREY, 0);
+
+	// get the shorttext from the currently set id
+	const item_t *item = _items;
+	while(item->shortname)
+	{
+		if(item->id == *_target)
+			break;
+		item++;
+	};
+	// if _target is not found, _target will be set to the last id
+	*_target = item->id;
+	lv_label_set_text_fmt(_btn_lbl, item->shortname);
+
+	root()->group_add(_btn);
+};
+/* static */ void SelectorField::btn_click_cb(lv_event_t *e)
+{
+	SelectorField* me = static_cast<SelectorField*>(e->user_data);
+	me->open();
+};
+
+void SelectorField::draw_open()
+{
+    // lv_obj_add_state(_btn, LV_STATE_CHECKED);
+
+	lv_group_t* grp = root()->group_push();
+
+	// get coords of label
+	lv_area_t bpos;
+	lv_obj_get_coords(_btn_lbl, &bpos);
+
+
+	// draw (floating) spinbox right over label
+	_list = lv_list_create(lv_layer_top());
+	{
+		const int w = DISPLAY_WIDTH - bpos.x1;
+		const int h = DISPLAY_HEIGHT - bpos.y1;
+		lv_obj_set_pos(_list, bpos.x1 - 12, bpos.y1 - 12);
+		lv_obj_set_size(_list, w + 24, h + 24);
+
+		const item_t *item = _items;
+		while(item->shortname)
+		{
+			// create button
+			lv_obj_t *btn = lv_list_add_btn(_list, nullptr, item->longname ? item->longname : item->shortname);
+			btn->user_data = this;			
+			lv_obj_add_event_cb(btn, choose_click_cb, LV_EVENT_CLICKED, const_cast<item_t*>(item));
+			lv_group_add_obj(grp, btn);
+
+			// set to currently selected item
+			if(item->id == *_target)
+				lv_group_focus_obj(btn);
+
+			item++;
+		};
+	};
+};
+/* static */ void SelectorField::choose_click_cb(lv_event_t *e)
+{
+    lv_obj_t *btn = lv_event_get_target(e);
+	SelectorField* me = static_cast<SelectorField*>(btn->user_data);
+	const item_t* item = static_cast<const item_t*>(e->user_data);
+
+	uint32_t prv_id = *(me->_target);
+	*(me->_target) = item->id;
+	if(prv_id != item->id)
+	{
+		me->call_onchange();
+	};
+
+	me->close();
+};
+
+bool SelectorField::sendKey(lv_key_t key)
+{
+	// user_data had to be set but we don't handle keys. But also do no propagate to parent.
+	return false;
+};
+
+void SelectorField::draw_close()
+{
+	lv_obj_del(_list); _list = nullptr;
+
+	// lv_obj_clear_state(_btn, LV_STATE_CHECKED);
+
+	const item_t *item = _items;
+	bool found = false;
+	while(item->shortname)
+	{
+		if(item->id == *_target)
+		{
+			found = true;
+			break;
+		};
+		item++;
+	};
+
+#ifdef DEBUG
+	// This should never happen
+	if(!found)
+	{
+		ERROR("target id not found after select. Serious bug.");
+		*_target = _items[0].id;
+	};
+#endif
+
+	lv_label_set_text_fmt(_btn_lbl, item->shortname);
+
+	root()->group_pop();
+};
+
+
 /*** SubMenu ***************************************************************************************/
 void SubMenu::draw_open()
 {
@@ -407,7 +552,7 @@ void SubMenu::draw_open()
 	lv_obj_t *btn = lv_list_add_btn(_list, LV_SYMBOL_LEFT, "Back");
 	lv_obj_add_event_cb(btn, SubMenu::close_cb, LV_EVENT_CLICKED, this);
 	root()->group_add(btn);
-	lv_list_add_text(_list, _text);
+	lv_list_add_text(_list, _name);
 
 	for(auto child: _children)
 		child->draw_btn(_list);
@@ -428,7 +573,7 @@ void SubMenu::draw_btn(lv_obj_t *lv_list)
     _btn_img = lv_img_create(_btn);
     lv_img_set_src(_btn_img, LV_SYMBOL_RIGHT);
 	lv_obj_t * label = lv_label_create(_btn);
-	lv_label_set_text(label, _text);
+	lv_label_set_text(label, _name);
 	lv_label_set_long_mode(label, LV_LABEL_LONG_SCROLL_CIRCULAR);
 	lv_obj_set_flex_grow(label, 1);
 
@@ -452,14 +597,14 @@ void SubMenu::draw_btn(lv_obj_t *lv_list)
 	me->close();
 };
 
-MenuSeparator* SubMenu::addSeparator(const char* text)
+MenuSeparator* SubMenu::addSeparator(const char* name)
 {
-	return new MenuSeparator(this, text);
+	return new MenuSeparator(this, name);
 };
 
-SubMenu* SubMenu::addSubMenu(const char* text)
+SubMenu* SubMenu::addSubMenu(const char* name)
 {
-	return new SubMenu(this, text);
+	return new SubMenu(this, name);
 };
 
 NumberField* SubMenu::addSpinbox(const char* name, double* f, double min, double max, uint decimals)
@@ -484,6 +629,10 @@ BooleanField* SubMenu::addCheckbox(const char* name, bool *b)
 	return new BooleanField(this, name, b, BooleanField::BOOLTYPE_CHECKBOX);
 };
 
+SelectorField*	SubMenu::addSelector(const char* name, uint32_t* seltarget, SelectorField::item_t *items)
+{
+	return new SelectorField(this, name, seltarget, items);
+};
 
 /*** Root ***************************************************************************************/
 TreeMenu::~TreeMenu()
