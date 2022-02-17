@@ -29,7 +29,7 @@ class SooghGUI
 		void 	pushGroup(lv_group_t*);
 		void	popGroup();
 
-		virtual void showMessage(const char* title, const char* text);
+		virtual void showMessage(const char* title, const char* text, lv_event_cb_t onclose = nullptr);
 
 	protected:
 		ScreenStack			_scrstack;

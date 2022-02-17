@@ -92,7 +92,10 @@ bool SooghGUI::handle(soogh_event_t e)
         case KEY_C_SHORT:
             if(_msgbox)
             {
-                lv_msgbox_close(_msgbox); _msgbox = nullptr;
+				// make close cb be called & close already
+				lv_event_send(_msgbox, LV_EVENT_VALUE_CHANGED, lvgl_indev_keyenc);
+                lv_msgbox_close(_msgbox); 
+				_msgbox = nullptr;
                 return true;
             };
         default: break;
@@ -114,7 +117,6 @@ bool SooghGUI::handle(soogh_event_t e)
     };
     return true;
 };
-
 
 ScreenPtr SooghGUI::pushScreen(ScreenPtr scr, void* data)
 {
@@ -180,9 +182,9 @@ void SooghGUI::popGroup()
 	lv_indev_set_group(lvgl_indev_keyenc, _groupstack.top());
 };
 
-void SooghGUI::showMessage(const char* title, const char* text)
+void SooghGUI::showMessage(const char* title, const char* text, lv_event_cb_t onclose)
 {
-    static const char * btns[] ={"Close", ""};
+    static const char * btns[] ={""};
 
     // Close the previous, if still one open
     if(_msgbox)
@@ -192,8 +194,12 @@ void SooghGUI::showMessage(const char* title, const char* text)
     };
 
     //lv_layer_top()
-    _msgbox = lv_msgbox_create(NULL, title, text, btns, false);
-    // lv_obj_add_event_cb(mbox1, event_cb, LV_EVENT_VALUE_CHANGED, NULL);
+    _msgbox = lv_msgbox_create(NULL, title, text, btns, true);
+	if(onclose)
+	{
+		DBG("Adding onclose!");
+    	lv_obj_add_event_cb(_msgbox, onclose, LV_EVENT_VALUE_CHANGED, NULL);
+	};
     // lv_obj_t *but = lv_msgbox_get_btns(mbox1);
     lv_obj_center(_msgbox);
 };
