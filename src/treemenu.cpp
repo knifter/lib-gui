@@ -496,7 +496,7 @@ void SelectorField::draw_open()
 
 bool SelectorField::sendKey(lv_key_t key)
 {
-	// user_data had to be set but we don't handle keys. But also do no propagate to parent.
+	// user_data had to be set but we don't handle keys. But also do not propagate to parent.
 	return false;
 };
 
