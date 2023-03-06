@@ -55,7 +55,7 @@ class Screen
 		virtual void init() {};
         virtual void load();
 		virtual bool handle(soogh_event_t e) { return false; };
-        virtual bool loop() { return true; };
+        virtual void loop() { return; };
 		virtual void close();
 
 		virtual const char* name() { return ScreenNames[(int) type()]; };
