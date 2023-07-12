@@ -8,7 +8,7 @@
 typedef enum : uint32_t
 {
 	KEY_NONE = 0x00,
-    KEY_RELEASED = KEYTOOL_RELEASED,
+    KEY_RELEASED = KEYTOOL_LONG_RELEASED,
 
     // key defs
 	KEY_A = 0x01,
