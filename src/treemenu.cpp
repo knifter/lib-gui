@@ -419,10 +419,10 @@ void SelectorField::draw_btn(lv_obj_t *lv_list)
 	lv_obj_set_style_pad_row(_btn, 3, 0);
 
 	_btn_lbl = lv_label_create(_btn);
-	lv_label_set_text_fmt(_btn_lbl, "lbl");
+	// lv_label_set_text_fmt(_btn_lbl, "lbl");
 	lv_obj_set_style_text_color(_btn_lbl, COLOR_GREY, 0);
 
-	// get the shorttext from the currently set id
+	// get the shorttext by finding the currently set id
 	const item_t *item = _items;
 	while(item->shortname)
 	{
@@ -430,9 +430,10 @@ void SelectorField::draw_btn(lv_obj_t *lv_list)
 			break;
 		item++;
 	};
-	// if _target is not found, _target will be set to the last id
+
+	// if _target is not found, _target will be set to the last id == 0
 	*_target = item->id;
-	lv_label_set_text_fmt(_btn_lbl, item->shortname);
+    lv_label_set_text_fmt(_btn_lbl, item->shortname ? item->shortname : "-");
 
 	root()->group_add(_btn);
 };
