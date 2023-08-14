@@ -107,14 +107,14 @@ bool SooghGUI::handle(soogh_event_t e)
         return true;
 
     // Give the bare keys to LVGL
-    switch(e)
-    {
-        case KEY_A:     lvgl_enc_pressed = true;  lvgl_enc_last_key = LV_KEY_LEFT ; break;
-        case KEY_B:     lvgl_enc_pressed = true;  lvgl_enc_last_key = LV_KEY_ENTER; break;
-        case KEY_C:     lvgl_enc_pressed = true;  lvgl_enc_last_key = LV_KEY_RIGHT; break;
-        case KEY_AC:    lvgl_enc_pressed = true;  lvgl_enc_last_key = LV_KEY_BACKSPACE; break;
-        default:  		lvgl_enc_pressed = false;
-    };
+    // switch(e)
+    // {
+    //     case KEY_A:     DBG("A"); lvgl_enc_pressed = true;  lvgl_enc_last_key = LV_KEY_LEFT ; break;
+    //     case KEY_B:     DBG("B"); lvgl_enc_pressed = true;  lvgl_enc_last_key = LV_KEY_ENTER; break;
+    //     case KEY_C:     DBG("C"); lvgl_enc_pressed = true;  lvgl_enc_last_key = LV_KEY_RIGHT; break;
+    //     case KEY_AC:    lvgl_enc_pressed = true;  lvgl_enc_last_key = LV_KEY_BACKSPACE; break;
+    //     default:  		lvgl_enc_pressed = false;
+    // };
     return true;
 };
 
