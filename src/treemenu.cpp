@@ -728,6 +728,11 @@ void TreeMenu::group_add(lv_obj_t* obj)
 
 bool TreeMenu::sendKey(lv_key_t key)
 {
+    if(!isOpen())
+    {
+        WARNING("Menu is closed.");
+        return false;
+    };
 	if(_grpstack.empty())
 	{
 		WARNING("No group to send key to.");

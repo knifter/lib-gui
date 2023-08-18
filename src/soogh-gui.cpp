@@ -134,19 +134,21 @@ void SooghGUI::popScreen(Screen* scr)
 	if(_scrstack.empty())
 		return;
 
-	// ActivityPtr is a smart ptr. It will delete a in GUI::handle() eventually
+    // Get current (Screen on) top
 	ScreenPtr top = _scrstack.top();
-	_scrstack.pop();
-	SOOGH_DBG("pop(%s)", top->name());
 
     // Just a check for now
     if(scr != nullptr && top.get() != scr)
     {
-        ERROR("Screen* given does not match top().");
-        // pushMessageScreen("ERROR", "Screen* != top()");
+        SOOGH_DBG("Screen* given does not match top().");
         return;
     };
 
+	// ScreenPtr is a smart ptr. It will delete a in GUI::handle() eventually
+	_scrstack.pop();
+	SOOGH_DBG("pop(%s)", top->name());
+
+    // Empty stack protection
 	if(_scrstack.empty())
 	{
 		ERROR("Empty ScreenStack. push(BOOT).");

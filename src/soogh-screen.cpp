@@ -33,7 +33,8 @@ void Screen::load()
 };
 
 void Screen::close() 
-{ 
+{
+    // Pop me, but only if it IS me at the screen stack
     _gui.popScreen(this);
 };
 
