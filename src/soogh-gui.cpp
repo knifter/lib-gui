@@ -14,9 +14,8 @@
     #define SOOGH_DBG(msg, ...)
 #endif
 
-SooghGUI::SooghGUI()
+SooghGUI::SooghGUI() : _flush_events(false)
 {
-
 };
 
 SooghGUI::~SooghGUI()
@@ -84,6 +83,19 @@ bool SooghGUI::handle(soogh_event_t e)
 {
 	loop();
 
+    // flush all events if a screen has closed previously, wait for KEY_RELEASED
+    if(_flush_events)
+    {
+        if(e != KEY_RELEASED)
+        {
+            SOOGH_DBG("Discard/Flush event: %s", soogh_event_name(e));
+            return true;
+        };
+        SOOGH_DBG("Re-enabling events.");
+        _flush_events = false;
+        return true;
+    };
+    
     // Handle global events
     switch(e)
     {
@@ -104,7 +116,11 @@ bool SooghGUI::handle(soogh_event_t e)
     // See if the Screen handles it
    	ScreenPtr scr = _scrstack.top();
     if(scr->handle(e))
+    {
+        SOOGH_DBG("Event %s handled by screen(%s)", soogh_event_name(e), scr->name());
         return true;
+    };
+    SOOGH_DBG("Event %s NOT handled by screen(%s)", soogh_event_name(e), scr->name());
 
     // Give the bare keys to LVGL
     // switch(e)
@@ -115,6 +131,7 @@ bool SooghGUI::handle(soogh_event_t e)
     //     case KEY_AC:    lvgl_enc_pressed = true;  lvgl_enc_last_key = LV_KEY_BACKSPACE; break;
     //     default:  		lvgl_enc_pressed = false;
     // };
+
     return true;
 };
 
@@ -160,6 +177,10 @@ void SooghGUI::popScreen(Screen* scr)
 
 	// make the screen below active again
     _scrstack.top()->load();
+
+    // Make the gui.handle() flush events before next screen gets them
+    SOOGH_DBG("Disabling events.");
+    _flush_events = true;
 
 	SOOGH_DBG("popped, will delete (eventually): %s(%p=%p)", top->name(), top, top.get());
 	return;

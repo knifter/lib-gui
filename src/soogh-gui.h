@@ -36,6 +36,7 @@ class SooghGUI
 		GroupStack  		_groupstack;
 		time_t				_prv_tick;
 		lv_obj_t			*_msgbox = nullptr;
+        bool                _flush_events = false;
 
 	public:
 		virtual time_t loop();
