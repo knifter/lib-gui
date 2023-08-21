@@ -99,15 +99,16 @@ bool SooghGUI::handle(soogh_event_t e)
     // Handle global events
     switch(e)
     {
-        case KEY_A_SHORT:
-        case KEY_B_SHORT:
-        case KEY_C_SHORT:
+        case KEY_A_PRESSED:
+        case KEY_B_PRESSED:
+        case KEY_C_PRESSED:
             if(_msgbox)
             {
 				// make close cb be called & close already
 				lv_event_send(_msgbox, LV_EVENT_VALUE_CHANGED, lvgl_indev_keyenc);
                 lv_msgbox_close(_msgbox); 
 				_msgbox = nullptr;
+                SOOGH_DBG("_msgbox closed.");
                 return true;
             };
         default: break;
