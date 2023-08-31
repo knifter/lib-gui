@@ -222,7 +222,10 @@ class TreeMenu : public SubMenu
 
 		bool sendKey(lv_key_t key);
 
+		void addCloseMenuButton();
+
 		// FIXME: make these protected
+		static void close_menu_cb(MenuItem* item, void* user_data);
 		lv_group_t* group_push();
 		void group_pop();
 		lv_group_t* group_top();

@@ -599,6 +599,16 @@ void SubMenu::draw_btn(lv_obj_t *lv_list)
 	me->close();
 };
 
+void TreeMenu::close_menu_cb(MenuItem* item, void* user_data) {
+    SubMenu* me = static_cast<SubMenu*>(user_data);
+    me->close();
+}
+
+void TreeMenu::addCloseMenuButton()
+{
+    addAction("Close", TreeMenu::close_menu_cb, this, LV_SYMBOL_CLOSE);
+}
+
 MenuSeparator* SubMenu::addSeparator(const char* name)
 {
 	return new MenuSeparator(this, name);
@@ -664,11 +674,6 @@ void TreeMenu::draw_open()
 	_list = lv_list_create(lv_parent);
 	lv_obj_align(_list, LV_ALIGN_LEFT_MID, 0, 0);
 	lv_obj_set_size(_list, LV_PCT(80), LV_PCT(100));
-
-	// First (close) button
-	lv_obj_t *btn = lv_list_add_btn(_list, LV_SYMBOL_CLOSE, "Close");
-	lv_obj_add_event_cb(btn, TreeMenu::close_cb, LV_EVENT_CLICKED, this);
-	group_add(btn);
 
 	for(auto child: _children)
 		child->draw_btn(_list);
