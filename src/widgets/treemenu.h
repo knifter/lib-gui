@@ -104,13 +104,14 @@ class BooleanField : public MenuItem
 class ActionField : public MenuItem
 {
  	public:
- 		ActionField(MenuItem *parent, const char *text, treemenu_cb_t *func, void* data = nullptr);
+ 		ActionField(MenuItem *parent, const char *text, treemenu_cb_t *func, void* data = nullptr, const void* lv_icon = nullptr);
 
 	protected:
 		void draw_btn(lv_obj_t *lv_list);
 
 	private: // Callbacks
 		static void click_cb(lv_event_t *e);
+		const void* _lv_icon;
 };
 
 class NumberField : public MenuItem
@@ -196,7 +197,7 @@ class SubMenu : public MenuItem
 		MenuSeparator* 		addSeparator(const char* text);
 		SubMenu* 			addSubMenu(const char* text);
 		NumberField* 		addSpinbox(const char* name, double* f, double min = -10, double max = 10, uint decimals = 2);
-		ActionField*		addAction(const char* name, treemenu_cb_t func, void* data = nullptr);
+		ActionField*		addAction(const char* name, treemenu_cb_t func, void* data = nullptr, const void* lv_icon = nullptr);
 		BooleanField*		addSwitch(const char* name, bool* );
 		BooleanField*		addCheckbox(const char* name, bool* );
 		SelectorField*		addSelector(const char* name, uint32_t* seltarget, SelectorField::item_t *items);

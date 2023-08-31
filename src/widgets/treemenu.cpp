@@ -191,15 +191,16 @@ void BooleanField::draw_btn(lv_obj_t *lv_list)
 };
 
 /*** ActionItem ***************************************************************************************/
-ActionField::ActionField(MenuItem *parent, const char *name, treemenu_cb_t *func, void* data) : MenuItem(parent, name)
+ActionField::ActionField(MenuItem *parent, const char *name, treemenu_cb_t *func, void* data, const void* lv_icon) : MenuItem(parent, name)
 {
 	_change_cb = func; 
 	_change_data = data;
+	_lv_icon = lv_icon;
 };
 
 void ActionField::draw_btn(lv_obj_t *lv_list)
 {
-	lv_obj_t *btn = lv_list_add_btn(lv_list, nullptr, _name);
+	lv_obj_t *btn = lv_list_add_btn(lv_list, _lv_icon, _name);
 	lv_obj_add_event_cb(btn, click_cb, LV_EVENT_CLICKED, this);
 
 	root()->group_add(btn);
@@ -615,9 +616,9 @@ NumberField* SubMenu::addSpinbox(const char* name, double* f, double min, double
 	return item;
 };
 
-ActionField* SubMenu::addAction(const char* name, treemenu_cb_t *func, void *data)
+ActionField* SubMenu::addAction(const char* name, treemenu_cb_t *func, void *data, const void* lv_icon)
 {
-	return new ActionField(this, name, func, data);
+    return new ActionField(this, name, func, data, lv_icon);
 };
 
 BooleanField* SubMenu::addSwitch(const char* name, bool *b)
