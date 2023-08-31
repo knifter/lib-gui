@@ -57,7 +57,7 @@ class MenuItem //: public NonCopyable
 
 		const char* _name;
 		bool _open = false;
-		// lv_obj_t *_obj = nullptr;
+		lv_obj_t* _obj = nullptr;
 
 		// Callbacks
 		treemenu_cb_t 	*_close_cb = nullptr;
@@ -73,6 +73,7 @@ class MenuSeparator : public MenuItem
 {
 	public:
 		MenuSeparator(MenuItem *parent, const char *text) : MenuItem(parent, text) {};
+		void set_text(const char* text);
 
 	protected:
 		void draw_btn(lv_obj_t *lv_list);

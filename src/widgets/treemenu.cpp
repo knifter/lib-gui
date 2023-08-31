@@ -144,7 +144,13 @@ inline void MenuItem::call_onchange()
 /*** Separator ***************************************************************************************/
 void MenuSeparator::draw_btn(lv_obj_t *lv_list)
 {
-	lv_list_add_text(lv_list, _name);
+    _obj = lv_list_add_text(lv_list, _name);
+}
+
+void MenuSeparator::set_text(const char* text) {
+    if(_obj != nullptr) {
+        lv_label_set_text(_obj, text);
+    }
 };
 
 /*** BooleanField ***************************************************************************************/
