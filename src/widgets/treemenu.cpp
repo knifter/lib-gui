@@ -186,6 +186,8 @@ void BooleanField::draw_btn(lv_obj_t *lv_list)
 {
 	BooleanField* me = static_cast<BooleanField*>(e->user_data);
 
+	bool old_val = *(me->value);
+
 	// fake click on checkbox if click was on btn
 	if(e->target != me->_sw)
 	{
@@ -193,7 +195,14 @@ void BooleanField::draw_btn(lv_obj_t *lv_list)
 		lv_event_send(me->_sw, LV_EVENT_RELEASED, nullptr);
 	};
 
-	(*(me->value)) = lv_obj_has_state(me->_sw, LV_STATE_CHECKED);
+	bool new_value = lv_obj_has_state(me->_sw, LV_STATE_CHECKED);
+
+	(*(me->value)) = new_value;
+
+	if(old_val != new_value)
+	{
+	    me->call_onchange();
+	}
 };
 
 /*** ActionItem ***************************************************************************************/
