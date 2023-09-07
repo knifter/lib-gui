@@ -6,9 +6,7 @@
 // #include <memory>
 #include <list>
 
-#include <tools-log.h>
 #include <tools-nocopy.h>
-
 
 /*
 	MenuItem (drawable: draw_item, draw_open)
