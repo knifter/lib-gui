@@ -301,6 +301,7 @@ void NumberField::export_value()
 		return;
 	(*value) = lv_spinbox_get_value(_spinbox) / pow(10, decimals);
 	lv_label_set_text_fmt(_btn_lbl, "%.*f", decimals, *value);
+	call_onchange();
 };
 
 int NumberField::digits()
