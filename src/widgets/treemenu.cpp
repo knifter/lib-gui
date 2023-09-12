@@ -144,7 +144,13 @@ inline void MenuItem::call_onchange()
 /*** Separator ***************************************************************************************/
 void MenuSeparator::draw_btn(lv_obj_t *lv_list)
 {
-	lv_list_add_text(lv_list, _name);
+    _obj = lv_list_add_text(lv_list, _name);
+}
+
+void MenuSeparator::set_text(const char* text) {
+    if(_obj != nullptr) {
+        lv_label_set_text(_obj, text);
+    }
 };
 
 /*** BooleanField ***************************************************************************************/
@@ -180,6 +186,8 @@ void BooleanField::draw_btn(lv_obj_t *lv_list)
 {
 	BooleanField* me = static_cast<BooleanField*>(e->user_data);
 
+	bool old_val = *(me->value);
+
 	// fake click on checkbox if click was on btn
 	if(e->target != me->_sw)
 	{
@@ -187,19 +195,27 @@ void BooleanField::draw_btn(lv_obj_t *lv_list)
 		lv_event_send(me->_sw, LV_EVENT_RELEASED, nullptr);
 	};
 
-	(*(me->value)) = lv_obj_has_state(me->_sw, LV_STATE_CHECKED);
+	bool new_value = lv_obj_has_state(me->_sw, LV_STATE_CHECKED);
+
+	(*(me->value)) = new_value;
+
+	if(old_val != new_value)
+	{
+	    me->call_onchange();
+	}
 };
 
 /*** ActionItem ***************************************************************************************/
-ActionField::ActionField(MenuItem *parent, const char *name, treemenu_cb_t *func, void* data) : MenuItem(parent, name)
+ActionField::ActionField(MenuItem *parent, const char *name, treemenu_cb_t *func, void* data, const void* lv_icon) : MenuItem(parent, name)
 {
 	_change_cb = func; 
 	_change_data = data;
+	_lv_icon = lv_icon;
 };
 
 void ActionField::draw_btn(lv_obj_t *lv_list)
 {
-	lv_obj_t *btn = lv_list_add_btn(lv_list, nullptr, _name);
+	lv_obj_t *btn = lv_list_add_btn(lv_list, _lv_icon, _name);
 	lv_obj_add_event_cb(btn, click_cb, LV_EVENT_CLICKED, this);
 
 	root()->group_add(btn);
@@ -285,6 +301,7 @@ void NumberField::export_value()
 		return;
 	(*value) = lv_spinbox_get_value(_spinbox) / pow(10, decimals);
 	lv_label_set_text_fmt(_btn_lbl, "%.*f", decimals, *value);
+	call_onchange();
 };
 
 int NumberField::digits()
@@ -598,6 +615,16 @@ void SubMenu::draw_btn(lv_obj_t *lv_list)
 	me->close();
 };
 
+void TreeMenu::close_menu_cb(MenuItem* item, void* user_data) {
+    SubMenu* me = static_cast<SubMenu*>(user_data);
+    me->close();
+}
+
+void TreeMenu::addCloseMenuButton()
+{
+    addAction("Close", TreeMenu::close_menu_cb, this, LV_SYMBOL_CLOSE);
+}
+
 MenuSeparator* SubMenu::addSeparator(const char* name)
 {
 	return new MenuSeparator(this, name);
@@ -615,9 +642,9 @@ NumberField* SubMenu::addSpinbox(const char* name, double* f, double min, double
 	return item;
 };
 
-ActionField* SubMenu::addAction(const char* name, treemenu_cb_t *func, void *data)
+ActionField* SubMenu::addAction(const char* name, treemenu_cb_t *func, void *data, const void* lv_icon)
 {
-	return new ActionField(this, name, func, data);
+    return new ActionField(this, name, func, data, lv_icon);
 };
 
 BooleanField* SubMenu::addSwitch(const char* name, bool *b)
@@ -663,11 +690,6 @@ void TreeMenu::draw_open()
 	_list = lv_list_create(lv_parent);
 	lv_obj_align(_list, LV_ALIGN_LEFT_MID, 0, 0);
 	lv_obj_set_size(_list, LV_PCT(80), LV_PCT(100));
-
-	// First (close) button
-	lv_obj_t *btn = lv_list_add_btn(_list, LV_SYMBOL_CLOSE, "Close");
-	lv_obj_add_event_cb(btn, TreeMenu::close_cb, LV_EVENT_CLICKED, this);
-	group_add(btn);
 
 	for(auto child: _children)
 		child->draw_btn(_list);
