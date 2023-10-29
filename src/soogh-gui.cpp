@@ -14,7 +14,7 @@
     #define SOOGH_DBG(msg, ...)
 #endif
 
-SooghGUI::SooghGUI() : _flush_events(false)
+SooghGUI::SooghGUI()
 {
 };
 
@@ -79,12 +79,19 @@ time_t SooghGUI::loop()
     return lv_timer_handler();
 };
 
+void SooghGUI::flushEvents()
+{
+	// Start ignoring events until KEY_RELEASED is transmitted. 
+    SOOGH_DBG("Disabling events.");
+	_ignore_events = true;
+};
+
 bool SooghGUI::handle(soogh_event_t e)
 {
 	loop();
 
-    // flush all events if a screen has closed previously, wait for KEY_RELEASED
-    if(_flush_events)
+    // flush/ignore all events if a screen has closed previously, wait for KEY_RELEASED
+    if(_ignore_events)
     {
         if(e != KEY_RELEASED)
         {
@@ -92,7 +99,7 @@ bool SooghGUI::handle(soogh_event_t e)
             return true;
         };
         SOOGH_DBG("Re-enabling events.");
-        _flush_events = false;
+        _ignore_events = false;
         return true;
     };
     
@@ -180,8 +187,7 @@ void SooghGUI::popScreen(Screen* scr)
     _scrstack.top()->load();
 
     // Make the gui.handle() flush events before next screen gets them
-    SOOGH_DBG("Disabling events.");
-    _flush_events = true;
+	flushEvents();
 
 	SOOGH_DBG("popped, will delete (eventually): %s(%p=%p)", top->name(), top, top.get());
 	return;
