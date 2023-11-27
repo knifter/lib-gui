@@ -32,6 +32,8 @@
 #define COLOR_YELLOW_LIGHT(x)	lv_palette_lighten(LV_PALETTE_YELLOW, x)
 #define COLOR_AMBER			    lv_palette_main(LV_PALETTE_AMBER)
 #define COLOR_ORANGE		    lv_palette_main(LV_PALETTE_ORANGE)
+#define COLOR_ORANGE_LIGHT(x)	lv_palette_lighten(LV_PALETTE_ORANGE, x)
+#define COLOR_ORANGE_LIGHT(x)	lv_palette_lighten(LV_PALETTE_ORANGE, x)
 #define COLOR_DEEP_ORANGE	    lv_palette_main(LV_PALETTE_DEEP_ORANGE)
 #define COLOR_BROWN			    lv_palette_main(LV_PALETTE_BROWN)
 #define COLOR_BLUE_GREY		    lv_palette_main(LV_PALETTE_BLUE_GREY)
