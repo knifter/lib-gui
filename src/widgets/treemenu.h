@@ -88,8 +88,8 @@ class BooleanField : public MenuItem
 			BOOLTYPE_CHECKBOX
 		} booltype_t;
 
- 		BooleanField(MenuItem *parent, const char *text, bool *b, booltype_t type = BOOLTYPE_SWITCH) 
-		 	: MenuItem(parent, text), value(b), _type(type) {};
+ 		BooleanField(MenuItem *parent, const char *name, bool *b, booltype_t type = BOOLTYPE_SWITCH) 
+		 	: MenuItem(parent, name), value(b), _type(type) {};
 
 		bool *value;
 
@@ -105,7 +105,7 @@ class BooleanField : public MenuItem
 class ActionField : public MenuItem
 {
  	public:
- 		ActionField(MenuItem *parent, const char *text, treemenu_cb_t *func, void* data = nullptr, const void* lv_icon = nullptr);
+ 		ActionField(MenuItem *parent, const char *name, treemenu_cb_t *func, void* data = nullptr, const void* lv_icon = nullptr);
 
 	protected:
 		void draw_btn(lv_obj_t *lv_list);
@@ -118,7 +118,7 @@ class ActionField : public MenuItem
 class NumberField : public MenuItem
 {
  	public:
-		NumberField(MenuItem *parent, const char *text, double *f, double min = -10, double max = 10);
+		NumberField(MenuItem *parent, const char *name, double *f, double min = -10, double max = 10);
 
 	public: // member vars
 		double *value;
@@ -168,7 +168,7 @@ class SelectorField : public MenuItem
 			// uint8_t flags;
 		} item_t;
 		
-		SelectorField(MenuItem *parent, const char *text, uint32_t* target, const item_t *items);
+		SelectorField(MenuItem *parent, const char *name, uint32_t* target, const item_t *items);
 
 	protected:
 		// bool sendKey(lv_key_t key);
@@ -192,16 +192,16 @@ class SelectorField : public MenuItem
 class SubMenu : public MenuItem
 {
 	public:
-		SubMenu(SubMenu *parent, const char *text) : MenuItem(parent, text) {	};
+		SubMenu(SubMenu *parent, const char *name) : MenuItem(parent, name) {	};
 
 		// Construct children
 		MenuSeparator* 		addSeparator(const char* optional_text = nullptr);
-		SubMenu* 			addSubMenu(const char* text);
-		NumberField* 		addSpinbox(const char* text, double* f, double min = -10, double max = 10, uint decimals = 2);
-		ActionField*		addAction(const char* text, treemenu_cb_t func, void* data = nullptr, const void* lv_icon = nullptr);
-		BooleanField*		addSwitch(const char* text, bool* );
-		BooleanField*		addCheckbox(const char* text, bool* );
-		SelectorField*		addSelector(const char* text, uint32_t* seltarget, SelectorField::item_t *items);
+		SubMenu* 			addSubMenu(const char* name);
+		NumberField* 		addSpinbox(const char* name, double* f, double min = -10, double max = 10, uint decimals = 2);
+		ActionField*		addAction(const char* name, treemenu_cb_t func, void* data = nullptr, const void* lv_icon = nullptr);
+		BooleanField*		addSwitch(const char* name, bool* );
+		BooleanField*		addCheckbox(const char* name, bool* );
+		SelectorField*		addSelector(const char* name, uint32_t* seltarget, SelectorField::item_t *items);
 
 	protected:
 		void draw_btn(lv_obj_t *lv_list);

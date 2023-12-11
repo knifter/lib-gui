@@ -19,7 +19,7 @@ Class hierarchy:
 /*** MenuItem ***************************************************************************************/
 MenuItem::MenuItem(MenuItem *parent, const char *text) : _parent(parent), _text(text)
 {
-	// DBG("CONSTRUCT(%s) = %p", _name, this);
+	// DBG("CONSTRUCT(%s) = %p", _text, this);
 	if(_parent)
 		_parent->appendChild(this);
 };
@@ -34,7 +34,7 @@ MenuItem::~MenuItem()
 	{
 		WARNING("Destroying open object.");
 	};
-	// DBG("DESTROY(%s) = %p", _name, this);
+	// DBG("DESTROY(%s) = %p", _text, this);
 };
 
 MenuItem* MenuItem::parent()
@@ -64,7 +64,7 @@ void MenuItem::open()
 {
 	if(_open)
 		return;
-	// DBG("open(%s)", _name);
+	// DBG("open(%s)", _text);
 	// close other opened siblings
 	if(_parent)
 		_parent->close_children();
@@ -75,13 +75,13 @@ void MenuItem::open()
 
 void MenuItem::close_children()
 {
-	// DBG("close_children(of %s)", _name);
+	// DBG("close_children(of %s)", _text);
 	// propagate close through all children as well
 	for(auto child: _children)
 	{
 		if(child->isOpen())
 		{
-			// DBG("%s: close child: %s", this->_name, child->_name);
+			// DBG("%s: close child: %s", this->_text, child->_text);
 			child->close();
 		};
 	};
@@ -100,7 +100,7 @@ void MenuItem::close()
 	if(!_open)
 		return;
 
-	// DBG("close(%s)", _name);
+	// DBG("close(%s)", _text);
 
 	// make sure children are closed
 	close_children();
