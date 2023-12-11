@@ -195,7 +195,7 @@ class SubMenu : public MenuItem
 		SubMenu(SubMenu *parent, const char *text) : MenuItem(parent, text) {	};
 
 		// Construct children
-		MenuSeparator* 		addSeparator(const char* text);
+		MenuSeparator* 		addSeparator(const char* optional_text = nullptr);
 		SubMenu* 			addSubMenu(const char* text);
 		NumberField* 		addSpinbox(const char* name, double* f, double min = -10, double max = 10, uint decimals = 2);
 		ActionField*		addAction(const char* name, treemenu_cb_t func, void* data = nullptr, const void* lv_icon = nullptr);
