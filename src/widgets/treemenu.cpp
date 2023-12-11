@@ -570,7 +570,6 @@ void SubMenu::draw_open()
 	lv_obj_t *btn = lv_list_add_btn(_list, LV_SYMBOL_LEFT, "Back");
 	lv_obj_add_event_cb(btn, SubMenu::close_cb, LV_EVENT_CLICKED, this);
 	root()->group_add(btn);
-	lv_list_add_text(_list, _name);
 
 	for(auto child: _children)
 		child->draw_btn(_list);
