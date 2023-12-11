@@ -17,7 +17,7 @@ Class hierarchy:
 */
 
 /*** MenuItem ***************************************************************************************/
-MenuItem::MenuItem(MenuItem *parent, const char *name) : _parent(parent), _name(name)
+MenuItem::MenuItem(MenuItem *parent, const char *text) : _parent(parent), _text(text)
 {
 	// DBG("CONSTRUCT(%s) = %p", _name, this);
 	if(_parent)
@@ -158,7 +158,7 @@ void MenuSeparator::set_text(const char* text) {
 /*** BooleanField ***************************************************************************************/
 void BooleanField::draw_btn(lv_obj_t *lv_list)
 {
-	lv_obj_t *btn = lv_list_add_btn(lv_list, nullptr, _name);
+	lv_obj_t *btn = lv_list_add_btn(lv_list, nullptr, _text);
 	lv_obj_set_flex_flow(btn, LV_FLEX_FLOW_ROW_WRAP);
 	lv_obj_set_style_pad_row(btn, 3, 0);
 
@@ -217,7 +217,7 @@ ActionField::ActionField(MenuItem *parent, const char *name, treemenu_cb_t *func
 
 void ActionField::draw_btn(lv_obj_t *lv_list)
 {
-	lv_obj_t *btn = lv_list_add_btn(lv_list, _lv_icon, _name);
+	lv_obj_t *btn = lv_list_add_btn(lv_list, _lv_icon, _text);
 	lv_obj_add_event_cb(btn, click_cb, LV_EVENT_CLICKED, this);
 
 	root()->group_add(btn);
@@ -239,7 +239,7 @@ NumberField::NumberField(MenuItem *parent, const char *name, double *f, double m
 void NumberField::draw_btn(lv_obj_t *lv_list)
 {
 	// TODO: can this be moved to MenuItem?
-	_btn = lv_list_add_btn(lv_list, nullptr, _name);
+	_btn = lv_list_add_btn(lv_list, nullptr, _text);
 	lv_obj_add_event_cb(_btn, btn_clicked_cb, LV_EVENT_CLICKED, this);
 	lv_obj_set_flex_flow(_btn, LV_FLEX_FLOW_ROW_WRAP);
 	lv_obj_set_style_pad_row(_btn, 3, 0);
@@ -432,7 +432,7 @@ SelectorField::SelectorField(MenuItem *parent, const char *name, uint32_t* targe
 void SelectorField::draw_btn(lv_obj_t *lv_list)
 {
 	// TODO: can this be moved to MenuItem?
-	_btn = lv_list_add_btn(lv_list, nullptr, _name);
+	_btn = lv_list_add_btn(lv_list, nullptr, _text);
 	lv_obj_add_event_cb(_btn, btn_click_cb, LV_EVENT_CLICKED, this);
 	lv_obj_set_flex_flow(_btn, LV_FLEX_FLOW_ROW_WRAP);
 	lv_obj_set_style_pad_row(_btn, 3, 0);
@@ -592,7 +592,7 @@ void SubMenu::draw_btn(lv_obj_t *lv_list)
     _btn_img = lv_img_create(_btn);
     lv_img_set_src(_btn_img, LV_SYMBOL_RIGHT);
 	lv_obj_t * label = lv_label_create(_btn);
-	lv_label_set_text(label, _name);
+	lv_label_set_text(label, _text);
 	lv_label_set_long_mode(label, LV_LABEL_LONG_SCROLL_CIRCULAR);
 	lv_obj_set_flex_grow(label, 1);
 

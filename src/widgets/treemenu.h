@@ -27,7 +27,7 @@ typedef std::list<MenuItem*> MenuItemArray;
 class MenuItem //: public NonCopyable
 {
 	public:
-		MenuItem(MenuItem *parent, const char *text = "<none>");
+		MenuItem(MenuItem *parent, const char *text = nullptr);
 		virtual ~MenuItem();
 
 		void close();
@@ -55,7 +55,7 @@ class MenuItem //: public NonCopyable
 		MenuItem *_parent = nullptr;
 		MenuItemArray _children;
 
-		const char* _name;
+		const char* _text;
 		bool _open = false;
 		lv_obj_t* _obj = nullptr;
 
@@ -197,11 +197,11 @@ class SubMenu : public MenuItem
 		// Construct children
 		MenuSeparator* 		addSeparator(const char* optional_text = nullptr);
 		SubMenu* 			addSubMenu(const char* text);
-		NumberField* 		addSpinbox(const char* name, double* f, double min = -10, double max = 10, uint decimals = 2);
-		ActionField*		addAction(const char* name, treemenu_cb_t func, void* data = nullptr, const void* lv_icon = nullptr);
-		BooleanField*		addSwitch(const char* name, bool* );
-		BooleanField*		addCheckbox(const char* name, bool* );
-		SelectorField*		addSelector(const char* name, uint32_t* seltarget, SelectorField::item_t *items);
+		NumberField* 		addSpinbox(const char* text, double* f, double min = -10, double max = 10, uint decimals = 2);
+		ActionField*		addAction(const char* text, treemenu_cb_t func, void* data = nullptr, const void* lv_icon = nullptr);
+		BooleanField*		addSwitch(const char* text, bool* );
+		BooleanField*		addCheckbox(const char* text, bool* );
+		SelectorField*		addSelector(const char* text, uint32_t* seltarget, SelectorField::item_t *items);
 
 	protected:
 		void draw_btn(lv_obj_t *lv_list);
