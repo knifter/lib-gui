@@ -145,9 +145,14 @@ inline void MenuItem::call_onchange()
 void MenuSeparator::draw_btn(lv_obj_t *lv_list)
 {
 	if(_text == nullptr)
-		_text = "";
-    _obj = lv_list_add_text(lv_list, _text);
-}
+	{
+		_obj = lv_list_add_text(lv_list, "");
+		lv_obj_set_height(_obj, 3);
+	}else{
+    	_obj = lv_list_add_text(lv_list, _text);
+		// lv_obj_set_height(_obj, 10);
+	};
+};
 
 void MenuSeparator::set_text(const char* text) {
     if(_obj != nullptr) {
