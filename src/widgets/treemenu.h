@@ -162,13 +162,13 @@ class SelectorField : public MenuItem
 		// };
 		typedef struct 
 		{
-			uint32_t id;
+			int32_t id;
 			const char* shortname;
 			const char* longname;
 			// uint8_t flags;
 		} item_t;
 		
-		SelectorField(MenuItem *parent, const char *name, uint32_t* target, const item_t *items);
+		SelectorField(MenuItem *parent, const char *name, int32_t* target, const item_t *items);
 
 	protected:
 		// bool sendKey(lv_key_t key);
@@ -178,7 +178,7 @@ class SelectorField : public MenuItem
 		bool sendKey(lv_key_t key);
 
 	private:
-		uint32_t *_target;
+		int32_t *_target;
 		const item_t* _items;
 
 		static void btn_click_cb(lv_event_t *e);
@@ -201,7 +201,7 @@ class SubMenu : public MenuItem
 		ActionField*		addAction(const char* name, treemenu_cb_t func, void* data = nullptr, const void* lv_icon = nullptr);
 		BooleanField*		addSwitch(const char* name, bool* );
 		BooleanField*		addCheckbox(const char* name, bool* );
-		SelectorField*		addSelector(const char* name, uint32_t* seltarget, SelectorField::item_t *items);
+		SelectorField*		addSelector(const char* name, int32_t* seltarget, SelectorField::item_t *items);
 
 	protected:
 		void draw_btn(lv_obj_t *lv_list);

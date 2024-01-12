@@ -429,7 +429,7 @@ void NumberField::draw_close()
 
 /*** SelectorField *********************************************************************************/
 // SelectorField::SelectorField(MenuItem *parent, const char *name, uint32_t* target, selectionlist_t list)
-SelectorField::SelectorField(MenuItem *parent, const char *name, uint32_t* target, const item_t *items)
+SelectorField::SelectorField(MenuItem *parent, const char *name, int32_t* target, const item_t *items)
 	: MenuItem(parent, name), _target(target), _items(items)
 {
 };
@@ -663,7 +663,7 @@ BooleanField* SubMenu::addCheckbox(const char* name, bool *b)
 	return new BooleanField(this, name, b, BooleanField::BOOLTYPE_CHECKBOX);
 };
 
-SelectorField*	SubMenu::addSelector(const char* name, uint32_t* seltarget, SelectorField::item_t *items)
+SelectorField*	SubMenu::addSelector(const char* name, int32_t* seltarget, SelectorField::item_t *items)
 {
 	return new SelectorField(this, name, seltarget, items);
 };
