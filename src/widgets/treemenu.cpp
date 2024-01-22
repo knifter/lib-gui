@@ -457,7 +457,7 @@ void SelectorField::draw_btn(lv_obj_t *lv_list)
 
 	// if _target is not found, _target will be set to the last id == 0
 	*_target = item->id;
-    lv_label_set_text_fmt(_btn_lbl, item->shortname ? item->shortname : "-");
+    lv_label_set_text(_btn_lbl, item->shortname ? item->shortname : "-");
 
 	root()->group_add(_btn);
 };
@@ -552,7 +552,7 @@ void SelectorField::draw_close()
 	};
 #endif
 
-	lv_label_set_text_fmt(_btn_lbl, item->shortname);
+	lv_label_set_text(_btn_lbl, item->shortname);
 
 	root()->group_pop();
 };
