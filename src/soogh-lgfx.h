@@ -11,13 +11,21 @@
 
 #include <lvgl.h>
 
+#ifdef SOOGH_DEV_M5CORE
+	#define DISPLAY_HEIGHT				240
+	#define DISPLAY_WIDTH				320
+    #define SOOGH_DISP_ROTATE           1
+    #define SOOGH_ENCODER_KEYS          1
+
+    extern LGFX _lgfx;
+#endif
+
+
 #ifdef SOOGH_ENCODER_KEYS
     extern uint32_t             lvgl_enc_last_key;
     extern bool                 lvgl_enc_pressed;
 	extern lv_indev_t*          lvgl_indev_keyenc;
 #endif
-       
-extern LGFX _lgfx;
 
 void lgfx_init();
 void lvgl_init();

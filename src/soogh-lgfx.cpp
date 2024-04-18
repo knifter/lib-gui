@@ -22,6 +22,7 @@ static void lv_disp_cb(lv_disp_drv_t*, const lv_area_t*, lv_color_t*);
     static void lv_touchpad_cb(lv_indev_drv_t *, lv_indev_data_t *);
 #endif
 
+// Keys2LVGL conversion
 #ifdef SOOGH_ENCODER_KEYS
     uint32_t            lvgl_enc_last_key = 0;
     bool                lvgl_enc_pressed = false;
@@ -30,11 +31,20 @@ static void lv_disp_cb(lv_disp_drv_t*, const lv_area_t*, lv_color_t*);
     static void lv_keys_cb(lv_indev_drv_t *, lv_indev_data_t *);
 #endif
 
+// Device Configs
+#ifdef SOOGH_DEV_M5CORE
+// M%Stack has Lovyan Auto-detect, apparently
+LGFX _lgfx;
+#endif
+
+
 void lgfx_init()
 {
     _lgfx.init();
-    _lgfx.setRotation(1);
+    _lgfx.setRotation(SOOGH_DISP_ROTATE);
+#ifdef SOOGH_DEV_M5CORE
     _lgfx.setColorDepth(24);
+#endif
 };
 
 #if LV_USE_LOG
