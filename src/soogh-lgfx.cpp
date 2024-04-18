@@ -2,12 +2,18 @@
 
 #include "soogh-conf.h"
 
-LGFX                    _lgfx;
+// #define LGFX_USE_V1
+#include <LovyanGFX.hpp>
+#include <lvgl.h>
+#include "esp_heap_caps.h"
+
+// Draw buffer(s)
+#define LV_BUF_SIZE					(DISPLAY_HEIGHT*DISPLAY_WIDTH/10)
 lv_disp_draw_buf_t  	_lv_draw_buf;
-lv_color_t 			    _lv_color_buf1[LV_BUF_SIZE];
-#ifdef SOOGH_DOUBLEBUF
-lv_color_t 			    _lv_color_buf2[LV_BUF_SIZE];
-#endif
+lv_color_t*             _lv_color_buf1 = nullptr; 
+lv_color_t*             _lv_color_buf2 = nullptr;
+
+// Display driver
 lv_disp_drv_t 		    _lv_display_drv;        /*Descriptor of a display driver*/
 static void lv_disp_cb(lv_disp_drv_t*, const lv_area_t*, lv_color_t*);
 
@@ -40,17 +46,28 @@ void serial_log_cb(const char* line)
 
 void lvgl_init()
 {
+    _lv_color_buf1 = (lv_color_t*) heap_caps_malloc(LV_BUF_SIZE * sizeof(lv_color_t), MALLOC_CAP_INTERNAL | MALLOC_CAP_DMA);
+    if(!_lv_color_buf1)
+    {
+        // lv_color_t 			    _lv_color_buf1[LV_BUF_SIZE];
+    };
+    _lv_color_buf2 = nullptr;
+#ifdef SOOGH_DOUBLEBUF
+    _lv_color_buf2 = (lv_color_t*) heap_caps_malloc(LV_BUF_SIZE * sizeof(lv_color_t), MALLOC_CAP_INTERNAL | MALLOC_CAP_DMA);
+    if(!_lv_color_buf2)
+    {
+        // lv_color_t 			    _lv_color_buf2[LV_BUF_SIZE];
+    };
+#endif
+
     lv_init();
 
 #if LV_USE_LOG
     lv_log_register_print_cb(serial_log_cb);
 #endif
 
-#ifdef SOOGH_DOUBLEBUF
     lv_disp_draw_buf_init(&_lv_draw_buf, _lv_color_buf1, _lv_color_buf2, LV_BUF_SIZE);
-#else
-    lv_disp_draw_buf_init(&_lv_draw_buf, _lv_color_buf1, NULL, LV_BUF_SIZE);
-#endif
+
     lv_disp_drv_init(&_lv_display_drv);          /*Basic initialization*/
     _lv_display_drv.flush_cb = lv_disp_cb;    /*Set your driver function*/
     _lv_display_drv.draw_buf = &_lv_draw_buf;        /*Assign the buffer to the display*/
