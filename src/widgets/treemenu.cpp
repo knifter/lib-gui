@@ -389,7 +389,6 @@ bool TreeMenu::sendKey(lv_key_t key)
 	};
 
 	// simulated indev mode
-	editable_or_scrollable = lv_obj_is_editable(obj) || lv_obj_has_flag(obj, LV_OBJ_FLAG_SCROLLABLE);
 	// DBG("edit_or_scrollable = %s, group.editing = %s", editable_or_scrollable ? "true": "false", lv_group_get_editing(grp) ? "true":"false");
 	switch(key)
 	{
@@ -417,7 +416,8 @@ bool TreeMenu::sendKey(lv_key_t key)
 
 		case LV_KEY_ENTER:
 			// PRESSED, RELEASE code from lv_indec.c(596).indev_encoder_proc()
-			if(!editable_or_scrollable)
+			if(lv_obj_is_editable(obj) 
+				|| lv_obj_has_flag(obj, LV_OBJ_FLAG_SCROLLABLE))
 			{
 				// DBG("!edit|scrollable: obj.send(PRESSED, RELEASED, SHORT_CLICKED, CLICKED)");
 				lv_event_send(obj, LV_EVENT_PRESSED, lvgl_indev_keyenc);
