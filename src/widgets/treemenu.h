@@ -38,7 +38,7 @@ class MenuItem
 		virtual void draw_btn(lv_obj_t *lv_list) = 0;
 		virtual void draw_open() {};
 		virtual void draw_close() {};
-		virtual bool sendKey(lv_key_t key);
+		virtual bool handleKey(lv_key_t key, lv_obj_t* focused_obj);
 		friend class SubMenu;
 		friend class TreeMenu;
 
@@ -124,9 +124,9 @@ class NumberField : public MenuItem
 		int decimals = 2;
 		
 	protected:
-		bool sendKey(lv_key_t key);
 		void draw_btn(lv_obj_t *lv_list);
 		void draw_open();
+		bool handleKey(lv_key_t key, lv_obj_t* focused_obj);
 		void draw_close();
 		void export_value();
 
@@ -171,8 +171,8 @@ class SelectorField : public MenuItem
 		// bool sendKey(lv_key_t key);
 		void draw_btn(lv_obj_t *lv_list);
 		void draw_open();
+		bool handleKey(lv_key_t key, lv_obj_t* focused_obj);
 		void draw_close();
-		bool sendKey(lv_key_t key);
 
 	private:
 		int32_t *_target;

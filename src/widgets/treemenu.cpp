@@ -88,7 +88,7 @@ void MenuItem::close_children()
 
 };
 
-bool MenuItem::sendKey(lv_key_t key)
+bool MenuItem::handleKey(lv_key_t key, lv_obj_t*)
 {	
 	if(_parent)
 		return root()->sendKey(key);
@@ -382,7 +382,7 @@ bool TreeMenu::sendKey(lv_key_t key)
 	if(obj->user_data)
 	{
 		MenuItem* item = static_cast<MenuItem*>(obj->user_data);
-		if(item->sendKey(key))
+		if(item->handleKey(key, obj))
 		{
 			return true;
 		};
