@@ -1,20 +1,16 @@
 #ifndef __TREEMENU_H
 #define __TREEMENU_H
 
-#include <soogh.h>
-
-// #include <memory>
+#include <lvgl.h>
 #include <list>
-
-#include <tools-nocopy.h>
+#include <stack>
+#include <sys/types.h>
 
 /*
 	MenuItem (drawable: draw_item, draw_open)
 		SubMenu
 			TreeMenu
-		FloatItem
-		SwitchItem
-		ListItem
+		..Fields
 */
 
 class MenuItem;
@@ -24,7 +20,8 @@ typedef void treemenu_cb_t(MenuItem* item, void* user_data);
 
 typedef std::stack<lv_group_t*> GroupStack;
 typedef std::list<MenuItem*> MenuItemArray;
-class MenuItem //: public NonCopyable
+
+class MenuItem
 {
 	public:
 		MenuItem(MenuItem *parent, const char *text = nullptr);
