@@ -30,6 +30,7 @@ class MenuItem
 		void close();
 		void open();
 		bool isOpen();
+		void onOpen(treemenu_cb_t *func, void* user_data = nullptr);
 		void onClose(treemenu_cb_t *func, void* user_data = nullptr);
 		void onChange(treemenu_cb_t func, void* user_data = nullptr);
 
@@ -45,8 +46,9 @@ class MenuItem
 		MenuItem* parent();
 		TreeMenu* root();
 		void appendChild(MenuItem* child);
-		void call_onclose();
-		void call_onchange();
+		virtual void call_onopen();
+		virtual void call_onclose();
+		virtual void call_onchange();
 
 	protected:
 		MenuItem *_parent = nullptr;
@@ -57,6 +59,8 @@ class MenuItem
 		lv_obj_t* _obj = nullptr;
 
 		// Callbacks
+		treemenu_cb_t 	*_open_cb = nullptr;
+		void 			*_open_data = nullptr;
 		treemenu_cb_t 	*_close_cb = nullptr;
 		void 			*_close_data = nullptr;
 		treemenu_cb_t 	*_change_cb = nullptr;

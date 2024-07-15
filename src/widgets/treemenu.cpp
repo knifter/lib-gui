@@ -69,6 +69,9 @@ void MenuItem::open()
 	if(_parent)
 		_parent->close_children();
 
+	// Call on-open event callback
+	call_onopen();
+
 	draw_open();
 	_open = true;
 };
@@ -85,7 +88,6 @@ void MenuItem::close_children()
 			child->close();
 		};
 	};
-
 };
 
 bool MenuItem::handleKey(lv_key_t key, lv_obj_t*)
@@ -117,6 +119,17 @@ void MenuItem::close()
 bool MenuItem::isOpen() 
 { 
 	return _open; 
+};
+
+void MenuItem::onOpen(treemenu_cb_t *func, void* user_data) 
+{ 
+	_open_cb = func;
+	_open_data = user_data; 
+};
+inline void MenuItem::call_onopen()
+{
+	if(_open_cb)
+		_open_cb(this, _open_data);
 };
 
 void MenuItem::onClose(treemenu_cb_t *func, void* user_data) 
