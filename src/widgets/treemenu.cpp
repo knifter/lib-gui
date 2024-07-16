@@ -383,7 +383,6 @@ bool TreeMenu::sendKey(lv_key_t key)
 	};
 	lv_group_t* grp = _grpstack.top();
 
-	bool editable_or_scrollable = true;
 	lv_obj_t *obj = lv_group_get_focused(grp);
 	if(!obj)
 	{
