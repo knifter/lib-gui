@@ -283,6 +283,16 @@ SelectorField*	SubMenu::addSelector(const char* name, int32_t* seltarget, Select
 	return new SelectorField(this, name, seltarget, items);
 };
 
+// DateField* SubMenu::addDate(const char* optional_name, struct tm* target)
+// {
+// 	return new DateField(this, optional_name, target);
+// };
+
+// TimeField* SubMenu::addTime(const char* optional_name, struct tm* target)
+// {
+// 	return new TimeField(this, optional_name, target);
+// };
+
 /*** Root ***************************************************************************************/
 TreeMenu::~TreeMenu()
 {

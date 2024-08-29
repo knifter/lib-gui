@@ -190,6 +190,72 @@ class SelectorField : public MenuItem
 		lv_obj_t *_list = nullptr;
 };
 
+// class DateField : public MenuItem
+// {
+//  	public:
+// 		DateField(MenuItem *parent, const char *name, struct tm *target);
+
+// 	public: // member vars
+		
+// 	protected:
+// 		// bool sendKey(lv_key_t key);
+// 		void draw_btn(lv_obj_t *lv_list);
+// 		void draw_open();
+// 		bool handleKey(lv_key_t key, lv_obj_t* focused_obj);
+// 		void draw_close();
+
+// 	private: // Callbacks
+// 		void export_selected_value();
+
+// 		struct tm* _target;
+
+// 		// menu button
+// 		lv_obj_t *_btn = nullptr;
+// 		lv_obj_t *_btn_lbl = nullptr;
+// 		static void btn_click_cb(lv_event_t *e);
+
+// 		// When open
+// 		lv_obj_t* _calendar = nullptr;
+// 		lv_obj_t* _calendar_head = nullptr;
+// 		static void calender_event_cb(lv_event_t * e);
+// 		bool _edit;
+
+// #ifdef SOOGH_TOUCH
+// #endif
+// };
+
+// class TimeField : public MenuItem
+// {
+//  	public:
+// 		TimeField(MenuItem *parent, const char *name, struct tm *target);
+
+// 	public: // member vars
+		
+// 	protected:
+// 		// bool sendKey(lv_key_t key);
+// 		void draw_btn(lv_obj_t *lv_list);
+// 		void draw_open();
+// 		bool handleKey(lv_key_t key, lv_obj_t* focused_obj);
+// 		void draw_close();
+
+// 	private: // Callbacks
+// 		void export_value();
+
+// 		struct tm* _target;
+
+// 		// menu button
+// 		lv_obj_t *_btn = nullptr;
+// 		lv_obj_t *_btn_lbl = nullptr;
+// 		static void btn_click_cb(lv_event_t *e);
+
+// 		// When open
+
+// 		bool _edit;
+
+// #ifdef SOOGH_TOUCH
+// #endif
+// };
+
 class SubMenu : public MenuItem
 {
 	public:
@@ -203,6 +269,8 @@ class SubMenu : public MenuItem
 		BooleanField*		addSwitch(const char* name, bool* );
 		BooleanField*		addCheckbox(const char* name, bool* );
 		SelectorField*		addSelector(const char* name, int32_t* seltarget, SelectorField::item_t *items);
+		// DateField*			addDate(const char* name, struct tm* date_target);
+		// TimeField*			addTime(const char* name, struct tm* time_target);
 
 	protected:
 		void draw_btn(lv_obj_t *lv_list);
